@@ -21,14 +21,19 @@ export default function TopBar({ onLogoutClick }) {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setUser(session.user)
-        if (session.user.user_metadata?.avatar_url) {
-          setUserAvatar(session.user.user_metadata.avatar_url)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setUser(session.user)
+          if (session.user.user_metadata?.avatar_url) {
+            setUserAvatar(session.user.user_metadata.avatar_url)
+          }
         }
+      } catch (error) {
+        console.error('Error fetching session:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     getUser()
 
@@ -42,6 +47,7 @@ export default function TopBar({ onLogoutClick }) {
         setUser(null)
         setUserAvatar(null)
       }
+      setLoading(false)
     })
 
     return () => subscription?.unsubscribe()
@@ -60,7 +66,7 @@ export default function TopBar({ onLogoutClick }) {
         </Link>
       </div>
       <nav className="topbar-menu">
-        {!loading && items.map((it) => (
+        {items.map((it) => (
           <NavLink
             key={it.key}
             to={it.to}

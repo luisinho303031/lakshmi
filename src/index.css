@@ -988,6 +988,7 @@ h1 {
 
 .vaul-header {
   margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .vaul-title {

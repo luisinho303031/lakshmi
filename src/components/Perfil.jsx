@@ -32,25 +32,35 @@ export default function Perfil() {
 
     useEffect(() => {
         const getUser = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (session?.user) {
-                setUser(session.user)
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                if (session?.user) {
+                    setUser(session.user)
 
-                // Buscar dados do perfil
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .single()
+                    // Buscar dados do perfil
+                    const { data: profile, error } = await supabase
+                        .from('user_profiles')
+                        .select('*')
+                        .eq('user_id', session.user.id)
+                        .single()
 
-                if (profile) {
-                    setProfileData({
-                        avatar_url: profile.avatar_url,
-                        banner_url: profile.banner_url
-                    })
+                    if (error && error.code !== 'PGRST116') {
+                        // Ignore error if row doesn't exist (PGRST116), otherwise log it
+                        console.error('Error fetching profile:', error)
+                    }
+
+                    if (profile) {
+                        setProfileData({
+                            avatar_url: profile.avatar_url,
+                            banner_url: profile.banner_url
+                        })
+                    }
                 }
+            } catch (error) {
+                console.error('Error getting user session:', error)
+            } finally {
+                setLoading(false)
             }
-            setLoading(false)
         }
         getUser()
     }, [])
