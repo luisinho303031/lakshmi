@@ -1,0 +1,360 @@
+.obra-detalhe-container {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background-color: #000;
+}
+
+/* Background Atmospheric Glow */
+.obra-detalhe-container::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.obra-content-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Main Section */
+.obra-header-section {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  margin-bottom: 60px;
+  align-items: start;
+}
+
+.obra-details-section {
+  width: 100%;
+}
+
+/* Capa */
+.obra-capa-container {
+  position: sticky;
+  top: 100px;
+}
+
+.obra-capa {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #18181b;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Actions */
+.obra-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.btn-iniciar,
+.btn-biblioteca {
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px;
+  font-size: 0.95rem;
+  flex: 1;
+  height: 48px;
+}
+
+.btn-iniciar {
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
+
+.btn-iniciar:hover {
+  background: #e4e4e7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+}
+
+.btn-biblioteca {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid #27272a;
+  backdrop-filter: blur(10px);
+}
+
+.btn-biblioteca:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #52525b;
+}
+
+.btn-biblioteca.active {
+  background: #27272a;
+  color: #ffffff;
+  border-color: #52525b;
+}
+
+/* Title */
+.obra-titulo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.obra-titulo {
+  font-size: 3rem;
+  font-weight: 900;
+  margin: 0;
+  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+}
+
+.obra-autor {
+  font-size: 1.1rem;
+  color: #a1a1aa;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Description */
+.obra-descricao {
+  font-size: 1.05rem;
+  color: #d4d4d8;
+  line-height: 1.7;
+  margin: 0 0 32px 0;
+  text-align: justify;
+  max-width: 800px;
+}
+
+/* Genres */
+.obra-generos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.genero-tag {
+  background: rgba(39, 39, 42, 0.6);
+  border: 1px solid #27272a;
+  color: #e4e4e7;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.genero-tag:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* Metadata */
+.obra-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  padding-top: 32px;
+  border-top: 1px solid #1f1f22;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-label {
+  font-size: 0.8rem;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.meta-value {
+  font-size: 1.5rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Chapters Section */
+.obra-capitulos-section {
+  margin-top: 40px;
+}
+
+.capitulos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.capitulos-count {
+  border: 1px solid #27272a;
+  padding: 8px 16px;
+  color: #a1a1aa;
+  font-weight: 700;
+  background: #18181b;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  font-size: 0.9rem;
+}
+
+.btn-inverter-ordem {
+  background: #18181b;
+  border: 1px solid #27272a;
+  color: #a1a1aa;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.btn-inverter-ordem:hover {
+  background: #27272a;
+  color: #fff;
+}
+
+/* Chapters List */
+.obra-capitulos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.capitulo-item {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.capitulo-item:hover {
+  background: #18181b;
+  border-color: #27272a;
+  transform: scale(1.01);
+}
+
+.cap-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cap-numero {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.cap-data {
+  font-size: 0.85rem;
+  color: #52525b;
+}
+
+.cap-source {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .obra-header-section {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .obra-capa-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: static;
+  }
+
+  .obra-capa {
+    max-width: 240px;
+    margin: 0 auto 24px auto;
+  }
+
+  .obra-titulo {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .obra-autor {
+    text-align: center;
+  }
+
+  .obra-actions {
+    justify-content: center;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .obra-content-wrapper {
+    padding: 20px;
+  }
+
+  .capitulo-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .cap-source {
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+}
+
+/* Loading/Error */
+.loading-text,
+.error-text {
+  color: #71717a;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 60px;
+}
+
+.error-text {
+  color: #f87171;
+}

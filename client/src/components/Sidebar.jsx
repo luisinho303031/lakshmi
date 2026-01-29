@@ -1,0 +1,132 @@
+import React, { useEffect, useState, useRef } from 'react'
+import { NavLink, useNavigate, Link } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
+import './sidebar.css'
+import logo from '../logo.png'
+
+export default function Sidebar({ onLogoutClick }) {
+  const [user, setUser] = useState(null)
+  const [userAvatar, setUserAvatar] = useState(null)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const nav = useNavigate()
+  const profileMenuRef = useRef(null)
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUser(session.user)
+        if (session.user.user_metadata?.avatar_url) {
+          setUserAvatar(session.user.user_metadata.avatar_url)
+        }
+      }
+    }
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+        if (session.user.user_metadata?.avatar_url) {
+          setUserAvatar(session.user.user_metadata.avatar_url)
+        }
+      } else {
+        setUser(null)
+        setUserAvatar(null)
+      }
+    })
+
+    return () => subscription?.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const items = [
+    { key: 'Iniciar', to: '/inicio', icon: 'fa-solid fa-house' },
+    { key: 'Todas as obras', to: '/todas', icon: 'fa-solid fa-compass' }
+  ]
+
+  // Add library link only if user is logged in
+  if (user) {
+    items.push({ key: 'Biblioteca', to: '/biblioteca', icon: 'fa-solid fa-book' })
+    items.push({ key: 'Histórico', to: '/historico', icon: 'fa-solid fa-clock-rotate-left' })
+  }
+
+  return (
+    <aside className="sidebar">
+      <div className="site-name">
+        <Link to="/inicio">
+          <img src={logo} alt="Lakshmi" className="site-logo" />
+        </Link>
+      </div>
+
+      <nav className="menu">
+        {items.map((it) => (
+          <NavLink
+            key={it.key}
+            to={it.to}
+            className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}
+          >
+            <i className={it.icon} aria-hidden="true" />
+            <span className="label">{it.key}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        {user ? (
+          <div className="sidebar-profile" ref={profileMenuRef}>
+            <button
+              className="profile-btn"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+            >
+              {userAvatar ? (
+                <img src={userAvatar} alt="Avatar" className="sidebar-avatar" />
+              ) : (
+                <div className="sidebar-avatar-placeholder">
+                  {user.email?.[0].toUpperCase()}
+                </div>
+              )}
+              <div className="profile-info">
+                <span className="profile-name">{user.user_metadata?.name || 'Usuário'}</span>
+                <span className="profile-email">{user.email}</span>
+              </div>
+              <i className="fas fa-ellipsis-v"></i>
+            </button>
+
+            {showProfileMenu && (
+              <div className="profile-menu-popover">
+                <Link to="/perfil" className="popover-item" onClick={() => setShowProfileMenu(false)}>
+                  <i className="fas fa-user"></i> Perfil
+                </Link>
+                <Link to="/configuracoes" className="popover-item" onClick={() => setShowProfileMenu(false)}>
+                  <i className="fas fa-gear"></i> Configurações
+                </Link>
+                <button
+                  className="popover-item logout"
+                  onClick={() => {
+                    setShowProfileMenu(false)
+                    onLogoutClick()
+                  }}
+                >
+                  <i className="fas fa-sign-out-alt"></i> Sair
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link to="/entrar" className="sidebar-login-btn">
+            Entrar
+          </Link>
+        )}
+      </div>
+    </aside>
+  )
+}

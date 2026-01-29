@@ -1,0 +1,240 @@
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1000px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.topbar.scrolled {
+  background: rgba(0, 0, 0, 0.82);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  width: 40px;
+  height: auto;
+  display: block;
+  border-radius: 50%;
+}
+
+/* Navigation Menu */
+.topbar-menu {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  margin-right: 16px;
+}
+
+.topbar-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #e7e9ea;
+  border-radius: 0;
+  transition: all 0.2s;
+  font-weight: 400;
+  font-size: 0.9rem;
+  border-bottom: 2px solid transparent;
+}
+
+.topbar-item:hover {
+  border-bottom-color: rgba(231, 233, 234, 0.3);
+}
+
+.topbar-item.active {
+  font-weight: 600;
+  border-bottom-color: #e7e9ea;
+}
+
+/* Right Section */
+.topbar-right {
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-user-wrapper {
+  position: relative;
+}
+
+.topbar-user-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #e7e9ea;
+}
+
+.topbar-user-button i {
+  font-size: 1rem;
+  color: #e7e9ea;
+}
+
+.topbar-user-button:hover {
+  background: rgba(231, 233, 234, 0.1);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #27272a;
+  color: #e4e4e7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border: 1px solid #3f3f46;
+}
+
+.user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.topbar-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #000000;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  min-width: 200px;
+  padding: 0;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: #111;
+  color: #fff;
+}
+
+.dropdown-item.logout {
+  color: #ef4444;
+  margin-top: 0;
+  border-top: none;
+}
+
+.dropdown-item.logout:hover {
+  background: #111;
+  color: #f87171;
+}
+
+.topbar-entrar {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  background: #ffffff;
+  color: #000;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.topbar-entrar:hover {
+  background: #e4e4e7;
+  transform: scale(1.02);
+}
+
+/* Mobile Hamburger */
+.topbar-hamburger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #e4e4e7;
+  font-size: 1.3rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.topbar-hamburger:hover {
+  background: #27272a;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .topbar-menu {
+    display: flex;
+  }
+
+  .topbar-right {
+    display: flex;
+  }
+
+  .topbar-hamburger {
+    display: none;
+  }
+}
+
+/* Hide sidebar on desktop */
+@media (min-width: 1024px) {
+  .sidebar {
+    display: none;
+  }
+}
