@@ -27,11 +27,6 @@ export default function ObraNavegar() {
 
   // fetch obras for current page (infinite scroll)
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true
-      return
-    }
-
     let isInitial = page === 1
 
     // show cache immediately for initial page, but mark revalidating

@@ -102,11 +102,6 @@ export default function ObraTodas() {
 
   // fetch obras for current page (infinite scroll)
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true
-      return
-    }
-
     // Abort previous request if exists
     if (controllerRef.current) {
       controllerRef.current.abort()

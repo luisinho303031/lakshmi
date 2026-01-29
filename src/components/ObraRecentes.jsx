@@ -31,11 +31,6 @@ export default function ObraRecentes() {
   }, [])
 
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true
-      return
-    }
-
     setLoading(true)
 
     // Abort previous request if exists
@@ -51,7 +46,7 @@ export default function ObraRecentes() {
         // Fetch specific works manually
         const slugs = [
           'por-favor-fada-me-deixe-explicar',
-          'o-ponto-de-vista-do-leitor-oniscienteee',
+          'o-ponto-de-vista-do-leitor-onisciente',
           'sentido-da-espada-absoluta',
           'o-retorno-do-demonio-louco',
           'eu-obtive-um-item-mitico',
@@ -65,13 +60,11 @@ export default function ObraRecentes() {
               Accept: 'application/json'
             },
             signal: controller.signal
-          }).then(res => {
-            if (!res.ok) throw new Error(`${res.status} on ${slug}`)
-            return res.json()
-          })
+          }).then(res => res.ok ? res.json() : null)
+            .catch(() => null)
         )
 
-        const items = await Promise.all(promises)
+        const items = (await Promise.all(promises)).filter(item => item !== null)
 
         setRecentes(items)
         recentesCache.data = items
