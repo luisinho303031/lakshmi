@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { Drawer } from 'vaul'
+import { X, Filter, ChevronDown, Check } from 'lucide-react'
 
 let todasCache = null
 
@@ -33,6 +35,7 @@ export default function ObraTodas() {
   const toastTimeoutRef = useRef(null)
   const tagsDropdownRef = useRef(null)
   const statusDropdownRef = useRef(null)
+  const searchInputRef = useRef(null)
 
   const CDN_ROOT = 'https://api.verdinha.wtf/cdn'
   const IMG_BASE = `${CDN_ROOT}/scans`
@@ -339,15 +342,42 @@ export default function ObraTodas() {
   return (
     <>
       <div className="search-row">
-        <div className="search-container">
+        <div
+          className={`search-container ${searchExpanded ? 'expanded' : ''}`}
+          onClick={() => {
+            if (!searchExpanded) {
+              setSearchExpanded(true)
+              setTimeout(() => searchInputRef.current?.focus(), 100)
+            }
+          }}
+        >
           <i className="fas fa-search search-icon"></i>
           <input
+            ref={searchInputRef}
             type="text"
-            placeholder="Digite o nome da obra..."
+            placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onBlur={() => {
+              // Delay checking value to allow interaction
+              setTimeout(() => {
+                if (!searchTerm && searchExpanded) {
+                  setSearchExpanded(false)
+                }
+              }, 200)
+            }}
             className="search-input"
           />
+          {searchExpanded && searchTerm && (
+            <i
+              className="fas fa-times clear-search-icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSearchTerm('');
+                searchInputRef.current?.focus();
+              }}
+            ></i>
+          )}
         </div>
 
         <div className="desktop-filters">
@@ -402,15 +432,85 @@ export default function ObraTodas() {
           </div>
         </div>
 
-        <button className="mobile-filters-btn" onClick={() => setShowMobileFilters(true)}>
-          <span>Filtros</span>
-          {(selectedStatus.length > 0 || selectedTags.length > 0) && (
-            <span className="tags-count-badge" style={{ marginLeft: '2px' }}>
-              {selectedStatus.length + selectedTags.length}
-            </span>
-          )}
-          <i className="fas fa-chevron-down" style={{ fontSize: '0.7rem', opacity: 0.8 }}></i>
-        </button>
+        <Drawer.Root open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+          <Drawer.Trigger asChild>
+            <button className="mobile-filters-btn">
+              <i className="fas fa-sliders-h" style={{ fontSize: '1.25rem' }}></i>
+              {(selectedStatus.length > 0 || selectedTags.length > 0) && (
+                <span className="tags-count-badge mobile-badge">
+                  {selectedStatus.length + selectedTags.length}
+                </span>
+              )}
+            </button>
+          </Drawer.Trigger>
+          <Drawer.Portal>
+            <Drawer.Overlay className="vaul-overlay" />
+            <Drawer.Content className="vaul-content">
+              <div className="vaul-handle-wrapper">
+                <div className="vaul-handle" />
+              </div>
+
+              <div className="vaul-inner-content">
+                <div className="vaul-header">
+                  <Drawer.Title className="vaul-title">Filtros</Drawer.Title>
+                </div>
+
+                <div className="vaul-body">
+                  <div className="filter-section">
+                    <h4>Situação</h4>
+                    <div className="chips-container">
+                      {availableStatus.map((st) => (
+                        <div
+                          key={st.stt_id}
+                          className={`chip ${selectedStatus.includes(st.stt_id) ? 'active' : ''}`}
+                          onClick={() => toggleStatus(st.stt_id)}
+                        >
+                          {st.stt_nome}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="filter-section">
+                    <h4>Gêneros</h4>
+                    <div className="chips-container">
+                      {availableTags.map((tag) => (
+                        <div
+                          key={tag.tag_id}
+                          className={`chip ${selectedTags.includes(tag.tag_id) ? 'active' : ''}`}
+                          onClick={() => toggleTag(tag.tag_id)}
+                        >
+                          {tag.tag_nome}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="vaul-footer">
+                  <Drawer.Close asChild>
+                    <button className="vaul-apply-btn">
+                      Ver resultados
+                    </button>
+                  </Drawer.Close>
+                  {(selectedStatus.length > 0 || selectedTags.length > 0) && (
+                    <button
+                      className="vaul-clear-btn"
+                      onClick={() => {
+                        setSelectedStatus([]);
+                        setSelectedTags([]);
+                        setPage(1);
+                        setShowMobileFilters(false);
+                      }}
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
+                </div>
+              </div>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
       </div>
 
       {loading ? (
@@ -503,58 +603,6 @@ export default function ObraTodas() {
           {toast.message}
         </div>
       )}
-
-      {/* Mobile Filters Bottom Sheet */}
-      <div className={`bottom-sheet-overlay ${showMobileFilters ? 'open' : ''}`} onClick={() => setShowMobileFilters(false)}>
-        <div className={`bottom-sheet-content ${showMobileFilters ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
-          <div className="bottom-sheet-header">
-            <h3>Filtros</h3>
-            <button className="close-sheet-btn" onClick={() => setShowMobileFilters(false)}>
-              <i className="fas fa-times"></i>
-            </button>
-          </div>
-          <div className="bottom-sheet-body">
-            <div className="filter-section">
-              <h4>Situação</h4>
-              <div className="chips-container">
-                {availableStatus.map((st) => (
-                  <div
-                    key={st.stt_id}
-                    className={`chip ${selectedStatus.includes(st.stt_id) ? 'active' : ''}`}
-                    onClick={() => toggleStatus(st.stt_id)}
-                  >
-                    {st.stt_nome}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="filter-section">
-              <h4>Gêneros</h4>
-              <div className="chips-container">
-                {availableTags.map((tag) => (
-                  <div
-                    key={tag.tag_id}
-                    className={`chip ${selectedTags.includes(tag.tag_id) ? 'active' : ''}`}
-                    onClick={() => toggleTag(tag.tag_id)}
-                  >
-                    {tag.tag_nome}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          {(selectedStatus.length > 0 || selectedTags.length > 0) && (
-            <div className="bottom-sheet-footer">
-              <button className="apply-btn" onClick={() => setShowMobileFilters(false)}>
-                Ver resultados
-              </button>
-              <button className="clear-btn" onClick={() => { setSelectedStatus([]); setSelectedTags([]); setPage(1); setShowMobileFilters(false); }}>
-                Limpar
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
     </>
   )
 }
