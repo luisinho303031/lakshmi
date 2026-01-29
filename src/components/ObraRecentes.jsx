@@ -46,7 +46,7 @@ export default function ObraRecentes() {
         // Fetch specific works manually
         const slugs = [
           'por-favor-fada-me-deixe-explicar',
-          'o-ponto-de-vista-do-leitor-onisciente',
+          'necromante-catastrofico',
           'sentido-da-espada-absoluta',
           'o-retorno-do-demonio-louco',
           'eu-obtive-um-item-mitico',
