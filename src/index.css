@@ -939,13 +939,12 @@ h1 {
 .vaul-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.8);
   z-index: 2000;
 }
 
 .vaul-content {
-  background-color: #0c0c0c;
+  background-color: #000000;
   display: flex;
   flex-direction: column;
   border-top-left-radius: 20px;
@@ -1100,7 +1099,7 @@ h1 {
     border-radius: 50% !important;
     background: transparent;
     padding: 0 !important;
-    border: none;
+    border: none !important;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
@@ -1111,7 +1110,7 @@ h1 {
     flex: 1;
     width: auto !important;
     border-radius: 99px !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
     padding: 0 16px !important;
     justify-content: flex-start;
     background: #09090b;
@@ -1140,7 +1139,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #e4e4e7;
+    color: #a1a1aa;
   }
 
   .search-container.expanded .search-icon {

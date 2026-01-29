@@ -19,7 +19,15 @@ export default function ObraTodas() {
   const [toast, setToast] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [availableTags, setAvailableTags] = useState([])
+  const [availableTags, setAvailableTags] = useState([
+    { tag_id: 5, tag_nome: "Fantasia" },
+    { tag_id: 7, tag_nome: "Mistério" },
+    { tag_id: 8, tag_nome: "Romance" },
+    { tag_id: 1, tag_nome: "Ação" },
+    { tag_id: 2, tag_nome: "Aventura" },
+    { tag_id: 3, tag_nome: "Comédia" },
+    { tag_id: 22, tag_nome: "Artes Marciais" }
+  ])
   const [selectedTags, setSelectedTags] = useState([])
   const [showTagsDropdown, setShowTagsDropdown] = useState(false)
   const [availableStatus, setAvailableStatus] = useState([])
@@ -51,7 +59,7 @@ export default function ObraTodas() {
           }
         })
         const json = await res.json()
-        if (json.tags) setAvailableTags(json.tags)
+        // if (json.tags) setAvailableTags(json.tags) // Using hardcoded tags
         if (json.status) setAvailableStatus(json.status)
       } catch (err) {
         console.error('Erro ao buscar filtros:', err)
@@ -89,8 +97,8 @@ export default function ObraTodas() {
   const toggleStatus = (statusId) => {
     setPage(1)
     setSelectedStatus(prev => {
-      if (prev.includes(statusId)) return prev.filter(id => id !== statusId)
-      return [...prev, statusId]
+      if (prev.includes(statusId)) return []
+      return [statusId]
     })
   }
 
@@ -488,11 +496,6 @@ export default function ObraTodas() {
                 </div>
 
                 <div className="vaul-footer">
-                  <Drawer.Close asChild>
-                    <button className="vaul-apply-btn">
-                      Ver resultados
-                    </button>
-                  </Drawer.Close>
                   {(selectedStatus.length > 0 || selectedTags.length > 0) && (
                     <button
                       className="vaul-clear-btn"
