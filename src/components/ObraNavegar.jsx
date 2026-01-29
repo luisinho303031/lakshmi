@@ -53,7 +53,7 @@ export default function ObraNavegar() {
         if (page === 1) setLoading(true)
         else setLoadingMore(true)
 
-        const res = await fetch(`https://api.verdinha.wtf/obras/atualizacoes?pagina=${page}&limite=24&gen_id=1`, {
+        const res = await fetch(`/api-verdinha/obras/atualizacoes?pagina=${page}&limite=24&gen_id=1`, {
           headers: {
             Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
             Accept: 'application/json'
