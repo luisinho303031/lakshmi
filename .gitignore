@@ -10,7 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-*.local
+# .env.local is ignored, but we want .env to be pushed for now if needed, 
+# or better: only ignore .local files but keep .env if the user wants it in git
+.env.local
+.env.*.local
+
 
 # Editor directories and files
 .vscode/*
