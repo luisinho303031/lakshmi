@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import './Perfil.css'
 
 export default function Perfil() {
-    const [user, setUser] = useState(null)
+    const { user, loading: authLoading } = useAuth()
     const [activeTab, setActiveTab] = useState('biblioteca')
-    const [loading, setLoading] = useState(true)
 
     // Library State
     const [libraryItems, setLibraryItems] = useState([])
@@ -30,40 +30,37 @@ export default function Perfil() {
             .replace(/-+/g, '-')
     }
 
+    // Fetch Profile Data whenever User changes
     useEffect(() => {
-        const getUser = async () => {
+        let mounted = true
+
+        const fetchProfile = async () => {
+            if (!user) return
+
             try {
-                const { data: { session } } = await supabase.auth.getSession()
-                if (session?.user) {
-                    setUser(session.user)
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .maybeSingle()
 
-                    // Buscar dados do perfil
-                    const { data: profile, error } = await supabase
-                        .from('user_profiles')
-                        .select('*')
-                        .eq('user_id', session.user.id)
-                        .single()
-
-                    if (error && error.code !== 'PGRST116') {
-                        // Ignore error if row doesn't exist (PGRST116), otherwise log it
-                        console.error('Error fetching profile:', error)
-                    }
-
-                    if (profile) {
-                        setProfileData({
-                            avatar_url: profile.avatar_url,
-                            banner_url: profile.banner_url
-                        })
-                    }
+                if (mounted && profile) {
+                    setProfileData({
+                        avatar_url: profile.avatar_url,
+                        banner_url: profile.banner_url
+                    })
                 }
-            } catch (error) {
-                console.error('Error getting user session:', error)
-            } finally {
-                setLoading(false)
+            } catch (err) {
+                console.error('Error fetching profile:', err)
             }
         }
-        getUser()
-    }, [])
+
+        fetchProfile()
+
+        return () => {
+            mounted = false
+        }
+    }, [user])
 
     // Fetch Library when tab is active
     useEffect(() => {
@@ -79,7 +76,6 @@ export default function Perfil() {
 
                     if (error) throw error
 
-                    // Agora usamos os dados diretamente do Supabase, sem precisar buscar na API
                     setLibraryItems(libraryData || [])
                 } catch (err) {
                     console.error('Erro ao buscar biblioteca:', err)
@@ -134,11 +130,9 @@ export default function Perfil() {
         if (!selectedObra) return
         setContextMenu(null)
 
-        // Salva cópia para caso de erro (Rollback)
         const previousItems = [...libraryItems]
         const deletedId = selectedObra.id
 
-        // REMOÇÃO INSTANTÂNEA (Otimista)
         setLibraryItems(prev => prev.filter(item => item.id !== deletedId))
 
         try {
@@ -148,10 +142,8 @@ export default function Perfil() {
                 .eq('id', deletedId)
 
             if (error) throw error
-            // Se chegou aqui, removeu no banco com sucesso em segundo plano
         } catch (err) {
             console.error('Erro ao remover do banco:', err)
-            // Rollback em caso de erro real no banco
             setLibraryItems(previousItems)
             showToast('Erro ao sincronizar remoção', 'error')
         }
@@ -178,19 +170,16 @@ export default function Perfil() {
             const fileExt = file.name.split('.').pop()
             const fileName = `${user.id}/avatar.${fileExt}`
 
-            // Upload para o storage
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
                 .upload(fileName, file, { upsert: true })
 
             if (uploadError) throw uploadError
 
-            // Pegar URL pública
             const { data: { publicUrl } } = supabase.storage
                 .from('avatars')
                 .getPublicUrl(fileName)
 
-            // Atualizar no banco
             const { error: dbError } = await supabase
                 .from('user_profiles')
                 .upsert({
@@ -248,7 +237,7 @@ export default function Perfil() {
         }
     }
 
-    if (loading) return <div className="page-inner">Carregando...</div>
+    if (authLoading) return <div className="page-inner">Carregando...</div>
     if (!user) return <div className="page-inner">Você precisa estar logado.</div>
 
     const userAvatar = profileData.avatar_url || user.user_metadata?.avatar_url

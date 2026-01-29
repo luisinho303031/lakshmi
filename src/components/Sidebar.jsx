@@ -1,42 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { NavLink, useNavigate, Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../contexts/AuthContext'
 import './sidebar.css'
 import logo from '../logo.png'
 
 export default function Sidebar({ onLogoutClick }) {
-  const [user, setUser] = useState(null)
-  const [userAvatar, setUserAvatar] = useState(null)
+  const { user } = useAuth()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const nav = useNavigate()
   const profileMenuRef = useRef(null)
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setUser(session.user)
-        if (session.user.user_metadata?.avatar_url) {
-          setUserAvatar(session.user.user_metadata.avatar_url)
-        }
-      }
-    }
-    getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user)
-        if (session.user.user_metadata?.avatar_url) {
-          setUserAvatar(session.user.user_metadata.avatar_url)
-        }
-      } else {
-        setUser(null)
-        setUserAvatar(null)
-      }
-    })
-
-    return () => subscription?.unsubscribe()
-  }, [])
+  const userAvatar = user?.user_metadata?.avatar_url || null
 
   useEffect(() => {
     const handleClickOutside = (event) => {

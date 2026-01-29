@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../contexts/AuthContext'
 import './TopBar.css'
 import logo from '../logo.png'
 
 export default function TopBar({ onLogoutClick }) {
+  const { user, loading } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState(null)
-  const [userAvatar, setUserAvatar] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const userAvatar = user?.user_metadata?.avatar_url || null
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,40 +17,6 @@ export default function TopBar({ onLogoutClick }) {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          setUser(session.user)
-          if (session.user.user_metadata?.avatar_url) {
-            setUserAvatar(session.user.user_metadata.avatar_url)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching session:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user)
-        if (session.user.user_metadata?.avatar_url) {
-          setUserAvatar(session.user.user_metadata.avatar_url)
-        }
-      } else {
-        setUser(null)
-        setUserAvatar(null)
-      }
-      setLoading(false)
-    })
-
-    return () => subscription?.unsubscribe()
   }, [])
 
   const items = [

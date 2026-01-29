@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../contexts/AuthContext'
 import { Drawer } from 'vaul'
 import { X, Filter, ChevronDown, Check } from 'lucide-react'
 
 let todasCache = null
 
 export default function ObraTodas() {
+  const { user } = useAuth()
   const [obras, setObras] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -182,7 +184,6 @@ export default function ObraTodas() {
   useEffect(() => {
     const fetchBiblioteca = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
         const { data, error: err } = await supabase
@@ -198,7 +199,7 @@ export default function ObraTodas() {
     }
 
     fetchBiblioteca()
-  }, [])
+  }, [user])
 
   // Fechar context menu ao clicar fora
   useEffect(() => {
@@ -249,7 +250,6 @@ export default function ObraTodas() {
     setContextMenu(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         setBibliotecaObras(bibliotecaObras)
         showToast('Você precisa estar logado', 'error')
@@ -288,7 +288,6 @@ export default function ObraTodas() {
     setContextMenu(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         setBibliotecaObras(bibliotecaObras)
         showToast('Você precisa estar logado', 'error')

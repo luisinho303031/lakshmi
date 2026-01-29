@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../contexts/AuthContext'
 import './ObraDetalhe.css'
 
 export default function ObraDetalhe() {
   const { obraNome } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [obra, setObra] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -30,7 +32,6 @@ export default function ObraDetalhe() {
         setObra(data)
 
         // Verificar se está na biblioteca
-        const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const { data: bib } = await supabase
             .from('biblioteca_usuario')
@@ -49,11 +50,10 @@ export default function ObraDetalhe() {
     }
 
     fetchObra()
-  }, [obraNome])
+  }, [obraNome, user])
 
   const handleAddToLibrary = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         navigate('/entrar')
         return
