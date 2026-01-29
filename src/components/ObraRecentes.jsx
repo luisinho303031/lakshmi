@@ -243,7 +243,6 @@ export default function ObraRecentes() {
       <>
         <div className="recent-header">
           <div className="recent-heading">Recomendadas</div>
-          <Link to="/todas" className="ver-todas-link">Ver todas</Link>
         </div>
         <div className="obra-grid">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -265,7 +264,6 @@ export default function ObraRecentes() {
       <>
         <div className="recent-header">
           <div className="recent-heading">Recomendadas</div>
-          <Link to="/todas" className="ver-todas-link">Ver todas</Link>
         </div>
         <p style={{ color: 'salmon' }}>Erro: {error}</p>
       </>
@@ -277,7 +275,6 @@ export default function ObraRecentes() {
     <>
       <div className="recent-header">
         <div className="recent-heading">Recomendadas</div>
-        <Link to="/todas" className="ver-todas-link">Ver todas</Link>
       </div>
       <div className="obra-grid">
         {recentes.map((r) => {
