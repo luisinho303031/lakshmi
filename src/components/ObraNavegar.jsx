@@ -227,6 +227,7 @@ export default function ObraNavegar() {
   }
 
   const slugify = (str) => {
+    if (!str) return 'obra'
     return str
       .toLowerCase()
       .normalize('NFD')
