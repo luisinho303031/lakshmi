@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { Drawer } from 'vaul'
 
 const recentesCache = { data: null }
 
@@ -13,6 +14,7 @@ export default function ObraRecentes() {
   const [bibliotecaObras, setBibliotecaObras] = useState([])
   const [toast, setToast] = useState(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 520)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const mountedRef = useRef(false)
   const controllerRef = useRef(null)
   const contextMenuRef = useRef(null)
@@ -77,7 +79,7 @@ export default function ObraRecentes() {
 
     fetchRecent()
     return () => controller.abort()
-  }, []) // Removed isMobile dependency as fetch is constant list for now
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -132,18 +134,6 @@ export default function ObraRecentes() {
     }, 2000)
   }
 
-  const handleOpenObra = () => {
-    if (!selectedObra) return
-    window.location.href = `/obra/${slugify(selectedObra.obr_nome)}`
-    setContextMenu(null)
-  }
-
-  const handleOpenObraNewTab = () => {
-    if (!selectedObra) return
-    window.open(`/obra/${slugify(selectedObra.obr_nome)}`, '_blank')
-    setContextMenu(null)
-  }
-
   const slugify = (str) => {
     if (!str) return 'obra'
     return str
@@ -158,24 +148,25 @@ export default function ObraRecentes() {
   const handleContextMenu = (e, obra) => {
     e.preventDefault()
     setSelectedObra(obra)
-    setContextMenu({ x: e.clientX, y: e.clientY })
+    if (isMobile) {
+      setShowMobileMenu(true)
+    } else {
+      setContextMenu({ x: e.clientX, y: e.clientY })
+    }
   }
 
   const handleAddToLibrary = async () => {
     if (!selectedObra) return
 
-    console.log('Tentando adicionar obra:', selectedObra)
-
-    // Otimista: adiciona imediatamente
     const newBibliotecaObras = [...bibliotecaObras, selectedObra.obr_id]
     setBibliotecaObras(newBibliotecaObras)
     setContextMenu(null)
+    setShowMobileMenu(false)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        // Reverte se não estiver logado
-        setBibliotecaObras(bibliotecaObras)
+        setBibliotecaObras(bibliotecaObras) // Revert
         showToast('Você precisa estar logado', 'error')
         return
       }
@@ -188,8 +179,6 @@ export default function ObraRecentes() {
         data_adicionada: new Date().toISOString()
       }
 
-      console.log('Enviando para Supabase:', payload)
-
       const { error } = await supabase
         .from('biblioteca_usuario')
         .upsert(payload, {
@@ -197,10 +186,8 @@ export default function ObraRecentes() {
         })
 
       if (error) throw error
-      console.log('Salvo com sucesso!')
     } catch (err) {
-      // Reverte em caso de erro
-      setBibliotecaObras(bibliotecaObras)
+      setBibliotecaObras(bibliotecaObras) // Revert
       console.error('Erro no Supabase:', err)
       showToast('Erro ao adicionar: ' + err.message, 'error')
     }
@@ -209,16 +196,15 @@ export default function ObraRecentes() {
   const handleRemoveFromLibrary = async () => {
     if (!selectedObra) return
 
-    // Otimista: remove imediatamente
     const newBibliotecaObras = bibliotecaObras.filter(id => id !== selectedObra.obr_id)
     setBibliotecaObras(newBibliotecaObras)
     setContextMenu(null)
+    setShowMobileMenu(false)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        // Reverte se não estiver logado
-        setBibliotecaObras(bibliotecaObras)
+        setBibliotecaObras(bibliotecaObras) // Revert
         showToast('Você precisa estar logado', 'error')
         return
       }
@@ -231,10 +217,23 @@ export default function ObraRecentes() {
 
       if (error) throw error
     } catch (err) {
-      // Reverte em caso de erro
-      setBibliotecaObras([...bibliotecaObras, selectedObra.obr_id])
+      setBibliotecaObras([...bibliotecaObras, selectedObra.obr_id]) // Revert
       showToast('Erro ao remover: ' + err.message, 'error')
     }
+  }
+
+  const handleOpenObra = () => {
+    if (!selectedObra) return
+    window.location.href = `/obra/${slugify(selectedObra.obr_nome)}`
+    setContextMenu(null)
+    setShowMobileMenu(false)
+  }
+
+  const handleOpenObraNewTab = () => {
+    if (!selectedObra) return
+    window.open(`/obra/${slugify(selectedObra.obr_nome)}`, '_blank')
+    setContextMenu(null)
+    setShowMobileMenu(false)
   }
 
   // Skeleton loader
@@ -303,7 +302,7 @@ export default function ObraRecentes() {
         })}
       </div>
 
-      {contextMenu && (
+      {contextMenu && !isMobile && (
         <div
           ref={contextMenuRef}
           className="context-menu"
@@ -326,6 +325,43 @@ export default function ObraRecentes() {
           </button>
         </div>
       )}
+
+      <Drawer.Root open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="vaul-overlay" />
+          <Drawer.Content className="vaul-content">
+            <div className="vaul-handle-wrapper">
+              <div className="vaul-handle" />
+            </div>
+            <div className="vaul-inner-content">
+              <div className="vaul-header">
+                <Drawer.Title className="vaul-title">{selectedObra?.obr_nome}</Drawer.Title>
+              </div>
+              <div className="vaul-body">
+                {selectedObra && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    {bibliotecaObras.includes(selectedObra.obr_id) ? (
+                      <button className="context-menu-item" onClick={handleRemoveFromLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-trash"></i> Remover da biblioteca
+                      </button>
+                    ) : (
+                      <button className="context-menu-item" onClick={handleAddToLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-plus"></i> Adicionar à biblioteca
+                      </button>
+                    )}
+                    <button className="context-menu-item" onClick={handleOpenObra} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                      <i className="fas fa-arrow-right"></i> Abrir obra
+                    </button>
+                    <button className="context-menu-item" onClick={handleOpenObraNewTab} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: 'none', borderRadius: 0 }}>
+                      <i className="fas fa-external-link"></i> Abrir em outra aba
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
       {toast && (
         <div className={`toast toast-${toast.type}`}>

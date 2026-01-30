@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { Drawer } from 'vaul'
 
 let obrasCache = null
 
@@ -21,6 +22,9 @@ export default function ObraNavegar() {
   const controllerRef = useRef(null)
   const contextMenuRef = useRef(null)
   const toastTimeoutRef = useRef(null)
+
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 520)
 
   const CDN_ROOT = 'https://api.verdinha.wtf/cdn'
   const IMG_BASE = `${CDN_ROOT}/scans`
@@ -106,6 +110,15 @@ export default function ObraNavegar() {
     fetchBiblioteca()
   }, [])
 
+  // Detect resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 520)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Fechar context menu ao clicar fora
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -142,7 +155,11 @@ export default function ObraNavegar() {
   const handleContextMenu = (e, obra) => {
     e.preventDefault()
     setSelectedObra(obra)
-    setContextMenu({ x: e.clientX, y: e.clientY })
+    if (isMobile) {
+      setShowMobileMenu(true)
+    } else {
+      setContextMenu({ x: e.clientX, y: e.clientY })
+    }
   }
 
   const handleAddToLibrary = async () => {
@@ -153,6 +170,7 @@ export default function ObraNavegar() {
     const newBibliotecaObras = [...bibliotecaObras, selectedObra.obr_id]
     setBibliotecaObras(newBibliotecaObras)
     setContextMenu(null)
+    setShowMobileMenu(false)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -192,6 +210,7 @@ export default function ObraNavegar() {
     const newBibliotecaObras = bibliotecaObras.filter(id => id !== selectedObra.obr_id)
     setBibliotecaObras(newBibliotecaObras)
     setContextMenu(null)
+    setShowMobileMenu(false)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -218,12 +237,14 @@ export default function ObraNavegar() {
     if (!selectedObra) return
     window.location.href = `/obra/${slugify(selectedObra.obr_nome)}`
     setContextMenu(null)
+    setShowMobileMenu(false)
   }
 
   const handleOpenObraNewTab = () => {
     if (!selectedObra) return
     window.open(`/obra/${slugify(selectedObra.obr_nome)}`, '_blank')
     setContextMenu(null)
+    setShowMobileMenu(false)
   }
 
   const slugify = (str) => {
@@ -383,7 +404,7 @@ export default function ObraNavegar() {
       {/* sentinel for infinite scroll */}
       <div ref={sentinelRef} style={{ height: 1 }} />
 
-      {contextMenu && (
+      {contextMenu && !isMobile && (
         <div
           ref={contextMenuRef}
           className="context-menu"
@@ -406,6 +427,43 @@ export default function ObraNavegar() {
           </button>
         </div>
       )}
+
+      <Drawer.Root open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="vaul-overlay" />
+          <Drawer.Content className="vaul-content">
+            <div className="vaul-handle-wrapper">
+              <div className="vaul-handle" />
+            </div>
+            <div className="vaul-inner-content">
+              <div className="vaul-header">
+                <Drawer.Title className="vaul-title">{selectedObra?.obr_nome}</Drawer.Title>
+              </div>
+              <div className="vaul-body">
+                {selectedObra && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    {bibliotecaObras.includes(selectedObra.obr_id) ? (
+                      <button className="context-menu-item" onClick={handleRemoveFromLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-trash"></i> Remover da biblioteca
+                      </button>
+                    ) : (
+                      <button className="context-menu-item" onClick={handleAddToLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-plus"></i> Adicionar à biblioteca
+                      </button>
+                    )}
+                    <button className="context-menu-item" onClick={handleOpenObra} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                      <i className="fas fa-arrow-right"></i> Abrir obra
+                    </button>
+                    <button className="context-menu-item" onClick={handleOpenObraNewTab} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: 'none', borderRadius: 0 }}>
+                      <i className="fas fa-external-link"></i> Abrir em outra aba
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
       {toast && (
         <div className={`toast toast-${toast.type}`}>

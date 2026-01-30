@@ -36,6 +36,10 @@ export default function ObraTodas() {
   const [selectedStatus, setSelectedStatus] = useState([])
   const [showStatusDropdown, setShowStatusDropdown] = useState(false)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [showSearchDrawer, setShowSearchDrawer] = useState(false)
+  const [localSearch, setLocalSearch] = useState('') // New state for drawer search input
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 520)
   const [searchExpanded, setSearchExpanded] = useState(false)
   const sentinelRef = useRef(null)
   const revalidatingRef = useRef(false)
@@ -70,6 +74,15 @@ export default function ObraTodas() {
     fetchFilters()
   }, [])
 
+  // Detect resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 520)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Close dropdowns on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -102,6 +115,12 @@ export default function ObraTodas() {
       if (prev.includes(statusId)) return []
       return [statusId]
     })
+  }
+
+  const handleSearchSubmit = () => {
+    setSearchTerm(localSearch)
+    setPage(1) // Ensure page resets
+    setShowSearchDrawer(false)
   }
 
   // Debounce search
@@ -237,7 +256,11 @@ export default function ObraTodas() {
   const handleContextMenu = (e, obra) => {
     e.preventDefault()
     setSelectedObra(obra)
-    setContextMenu({ x: e.clientX, y: e.clientY })
+    if (isMobile) {
+      setShowMobileMenu(true)
+    } else {
+      setContextMenu({ x: e.clientX, y: e.clientY })
+    }
   }
 
   const handleAddToLibrary = async () => {
@@ -248,6 +271,7 @@ export default function ObraTodas() {
     const newBibliotecaObras = [...bibliotecaObras, selectedObra.obr_id]
     setBibliotecaObras(newBibliotecaObras)
     setContextMenu(null)
+    setShowMobileMenu(false)
 
     try {
       if (!user) {
@@ -286,6 +310,7 @@ export default function ObraTodas() {
     const newBibliotecaObras = bibliotecaObras.filter(id => id !== selectedObra.obr_id)
     setBibliotecaObras(newBibliotecaObras)
     setContextMenu(null)
+    setShowMobileMenu(false)
 
     try {
       if (!user) {
@@ -322,12 +347,14 @@ export default function ObraTodas() {
     if (!selectedObra) return
     window.location.href = `/obra/${slugify(selectedObra.obr_nome)}`
     setContextMenu(null)
+    setShowMobileMenu(false)
   }
 
   const handleOpenObraNewTab = () => {
     if (!selectedObra) return
     window.open(`/obra/${slugify(selectedObra.obr_nome)}`, '_blank')
     setContextMenu(null)
+    setShowMobileMenu(false)
   }
 
   // observe sentinel to trigger loading next page
@@ -352,9 +379,14 @@ export default function ObraTodas() {
         <div
           className={`search-container ${searchExpanded ? 'expanded' : ''}`}
           onClick={() => {
-            if (!searchExpanded) {
-              setSearchExpanded(true)
-              setTimeout(() => searchInputRef.current?.focus(), 100)
+            if (isMobile) {
+              setLocalSearch(searchTerm) // Sync open
+              setShowSearchDrawer(true)
+            } else {
+              if (!searchExpanded) {
+                setSearchExpanded(true)
+                setTimeout(() => searchInputRef.current?.focus(), 100)
+              }
             }
           }}
         >
@@ -362,7 +394,7 @@ export default function ObraTodas() {
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Buscar..."
+            placeholder="Digite o nome da obra..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onBlur={() => {
@@ -374,6 +406,7 @@ export default function ObraTodas() {
               }, 200)
             }}
             className="search-input"
+            readOnly={isMobile} // Prevent keyboard on mobile trigger
           />
           {searchExpanded && searchTerm && (
             <i
@@ -562,7 +595,7 @@ export default function ObraTodas() {
         </>
       )}
 
-      {contextMenu && (
+      {contextMenu && !isMobile && (
         <div
           ref={contextMenuRef}
           className="context-menu"
@@ -585,6 +618,108 @@ export default function ObraTodas() {
           </button>
         </div>
       )}
+
+      {/* NEW Search Drawer */}
+      <Drawer.Root open={showSearchDrawer} onOpenChange={setShowSearchDrawer}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="vaul-overlay" />
+          <Drawer.Content className="vaul-content">
+            <div className="vaul-handle-wrapper">
+              <div className="vaul-handle" />
+            </div>
+            <div className="vaul-inner-content">
+              <div className="vaul-header">
+                <Drawer.Title className="vaul-title">Pesquisar</Drawer.Title>
+              </div>
+              <div className="vaul-body">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <input
+                    type="text"
+                    placeholder="Digite o nome da obra..."
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 0',
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: '1px solid rgba(255,255,255,0.3)',
+                      color: '#fff',
+                      fontSize: '0.9rem',
+                      fontWeight: '400 !important',
+                      outline: 'none',
+                      borderRadius: 0
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSearchSubmit()
+                    }}
+                    onFocus={(e) => e.target.style.borderBottomColor = '#fff'}
+                    onBlur={(e) => e.target.style.borderBottomColor = 'rgba(255,255,255,0.3)'}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSearchSubmit}
+                    disabled={localSearch.trim().length < 3}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: '#fff',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '999px',
+                      fontSize: '0.9rem',
+                      fontWeight: '400',
+                      cursor: localSearch.trim().length < 3 ? 'not-allowed' : 'pointer',
+                      opacity: localSearch.trim().length < 3 ? 0.5 : 1,
+                      transition: 'opacity 0.2s'
+                    }}
+                  >
+                    Pesquisar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+
+      {/* NEW Context Menu Drawer */}
+      <Drawer.Root open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="vaul-overlay" />
+          <Drawer.Content className="vaul-content">
+            <div className="vaul-handle-wrapper">
+              <div className="vaul-handle" />
+            </div>
+            <div className="vaul-inner-content">
+              <div className="vaul-header">
+                <Drawer.Title className="vaul-title">{selectedObra?.obr_nome}</Drawer.Title>
+              </div>
+              <div className="vaul-body">
+                {selectedObra && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    {bibliotecaObras.includes(selectedObra.obr_id) ? (
+                      <button className="context-menu-item" onClick={handleRemoveFromLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-trash"></i> Remover da biblioteca
+                      </button>
+                    ) : (
+                      <button className="context-menu-item" onClick={handleAddToLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-plus"></i> Adicionar à biblioteca
+                      </button>
+                    )}
+                    <button className="context-menu-item" onClick={handleOpenObra} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                      <i className="fas fa-arrow-right"></i> Abrir obra
+                    </button>
+                    <button className="context-menu-item" onClick={handleOpenObraNewTab} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: 'none', borderRadius: 0 }}>
+                      <i className="fas fa-external-link"></i> Abrir em outra aba
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
       {toast && (
         <div className={`toast toast-${toast.type}`}>

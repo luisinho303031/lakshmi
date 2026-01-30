@@ -74,16 +74,16 @@ export default function App() {
         alignItems: 'center',
         height: '100vh',
         backgroundColor: '#000',
-        color: '#00ff88',
-        fontSize: '1.2rem',
+        color: '#fff',
+        fontSize: '1rem',
         fontFamily: 'sans-serif'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
           <div className="spinner" style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid rgba(0, 255, 136, 0.3)',
-            borderTopColor: '#00ff88',
+            width: '30px',
+            height: '30px',
+            border: '1px solid #303030',
+            borderTopColor: '#f0f0f0',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite'
           }}></div>
