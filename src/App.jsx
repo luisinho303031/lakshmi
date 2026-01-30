@@ -60,8 +60,40 @@ function Configuracoes() {
   )
 }
 
+import { useAuth } from './contexts/AuthContext'
+
 export default function App() {
+  const { loading } = useAuth()
   const location = useLocation()
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#000',
+        color: '#00ff88',
+        fontSize: '1.2rem',
+        fontFamily: 'sans-serif'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div className="spinner" style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid rgba(0, 255, 136, 0.3)',
+            borderTopColor: '#00ff88',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <span>Carregando Lakshmi...</span>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    )
+  }
+
   const isReading = location.pathname.startsWith('/cap/')
   const hideNav = location.pathname === '/entrar' || isReading
   const [showLogoutModal, setShowLogoutModal] = useState(false)

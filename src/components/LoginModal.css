@@ -1,0 +1,85 @@
+.login-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+}
+
+.login-modal-content {
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 30px;
+    width: 90%;
+    max-width: 370px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+
+
+.login-modal-header {
+    margin-bottom: 30px;
+}
+
+.login-modal-title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.login-modal-subtitle {
+    margin-top: 0px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.login-modal-error {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    color: #ff6b6b;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-modal-google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    background: #ffffff;
+    color: #000;
+    border: none;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.login-modal-google-btn:hover {
+    background: #f0f0f0;
+}
+
+.login-modal-google-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}

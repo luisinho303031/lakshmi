@@ -494,21 +494,7 @@ export default function ObraTodas() {
                   </div>
                 </div>
 
-                <div className="vaul-footer">
-                  {(selectedStatus.length > 0 || selectedTags.length > 0) && (
-                    <button
-                      className="vaul-clear-btn"
-                      onClick={() => {
-                        setSelectedStatus([]);
-                        setSelectedTags([]);
-                        setPage(1);
-                        setShowMobileFilters(false);
-                      }}
-                    >
-                      Limpar filtros
-                    </button>
-                  )}
-                </div>
+
               </div>
             </Drawer.Content>
           </Drawer.Portal>
