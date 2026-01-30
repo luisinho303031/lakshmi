@@ -35,23 +35,45 @@ export default function Perfil() {
         let mounted = true
 
         const fetchProfile = async () => {
-            if (!user) return
+            console.log('👤 Perfil - User:', user ? user.id : 'null', 'Loading:', authLoading)
+
+            // ⚠️ NÃO buscar dados enquanto ainda está carregando a autenticação
+            if (authLoading) {
+                console.log('⏳ Perfil - Aguardando autenticação...')
+                return
+            }
+
+            if (!user) {
+                console.log('❌ Perfil - User não disponível')
+                return
+            }
 
             try {
-                const { data: profile } = await supabase
+                console.log('✅ Perfil - Buscando dados do perfil para user:', user.id)
+                const { data: profile, error } = await supabase
                     .from('user_profiles')
                     .select('*')
                     .eq('user_id', user.id)
                     .maybeSingle()
 
+                if (error) {
+                    console.error('❌ Perfil - Erro ao buscar perfil:', error)
+                    return
+                }
+
+                console.log('📸 Perfil - Dados recebidos:', profile)
+
                 if (mounted && profile) {
+                    console.log('💾 Perfil - Salvando dados:', profile)
                     setProfileData({
                         avatar_url: profile.avatar_url,
                         banner_url: profile.banner_url
                     })
+                } else if (mounted && !profile) {
+                    console.log('⚠️ Perfil - Nenhum dado encontrado, usando valores padrão')
                 }
             } catch (err) {
-                console.error('Error fetching profile:', err)
+                console.error('💥 Perfil - Exceção ao buscar perfil:', err)
             }
         }
 
@@ -60,13 +82,14 @@ export default function Perfil() {
         return () => {
             mounted = false
         }
-    }, [user])
+    }, [user, authLoading])
 
     // Fetch Library when tab is active
     useEffect(() => {
-        if (activeTab === 'biblioteca' && user) {
+        if (activeTab === 'biblioteca' && user && !authLoading) {
             const fetchLibrary = async () => {
                 setLibraryLoading(true)
+                console.log('📚 Buscando biblioteca para user:', user.id)
                 try {
                     const { data: libraryData, error } = await supabase
                         .from('biblioteca_usuario')
@@ -74,19 +97,29 @@ export default function Perfil() {
                         .eq('usuario_id', user.id)
                         .order('data_adicionada', { ascending: false })
 
-                    if (error) throw error
+                    if (error) {
+                        console.error('❌ Erro ao buscar biblioteca:', error)
+                        console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2))
+                        throw error
+                    }
 
+                    console.log('✅ Biblioteca carregada:', libraryData?.length || 0, 'itens')
+                    console.log('📦 Dados da biblioteca:', libraryData)
                     setLibraryItems(libraryData || [])
                 } catch (err) {
-                    console.error('Erro ao buscar biblioteca:', err)
+                    console.error('❌ Erro ao buscar biblioteca:', err)
+                    console.error('💥 Stack trace:', err.stack)
                     setLibraryItems([])
                 } finally {
+                    console.log('🏁 Biblioteca - Finalizando loading')
                     setLibraryLoading(false)
                 }
             }
             fetchLibrary()
+        } else {
+            console.log('⏭️ Biblioteca - Pulando busca. Tab:', activeTab, 'User:', !!user, 'AuthLoading:', authLoading)
         }
-    }, [activeTab, user])
+    }, [activeTab, user, authLoading])
 
     // Context Menu State
     const [contextMenu, setContextMenu] = useState(null)

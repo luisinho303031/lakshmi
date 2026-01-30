@@ -7,7 +7,7 @@ import './ObraDetalhe.css'
 export default function ObraDetalhe() {
   const { obraNome } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [obra, setObra] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -21,6 +21,7 @@ export default function ObraDetalhe() {
     const fetchObra = async () => {
       try {
         setLoading(true)
+        console.log('🔍 Buscando obra:', obraNome, 'User:', user ? user.id : 'null', 'AuthLoading:', authLoading)
         const res = await fetch(`/api-verdinha/obras/${obraNome}`, {
           headers: {
             Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
@@ -31,16 +32,26 @@ export default function ObraDetalhe() {
         const data = await res.json()
         setObra(data)
 
-        // Verificar se está na biblioteca
-        if (user) {
-          const { data: bib } = await supabase
+        // ⚠️ Só verificar biblioteca se a autenticação já terminou de carregar
+        if (!authLoading && user) {
+          console.log('✅ User disponível, verificando biblioteca para obra:', data.obr_id)
+          const { data: bib, error } = await supabase
             .from('biblioteca_usuario')
             .select('id')
             .eq('usuario_id', user.id)
             .eq('obra_id', data.obr_id)
             .limit(1)
 
-          setNaBiblioteca(bib && bib.length > 0)
+          if (error) {
+            console.error('❌ Erro ao verificar biblioteca:', error)
+          } else {
+            console.log('📚 Resultado da biblioteca:', bib)
+            setNaBiblioteca(bib && bib.length > 0)
+          }
+        } else if (authLoading) {
+          console.log('⏳ Aguardando autenticação terminar...')
+        } else {
+          console.log('❌ User não disponível, não verificando biblioteca')
         }
       } catch (err) {
         setError(err.message)
@@ -50,20 +61,28 @@ export default function ObraDetalhe() {
     }
 
     fetchObra()
-  }, [obraNome, user])
+  }, [obraNome, user, authLoading])
 
   const handleAddToLibrary = async () => {
     try {
+      console.log('📖 handleAddToLibrary - User:', user ? user.id : 'null')
       if (!user) {
+        console.log('❌ Usuário não logado, redirecionando para login')
         navigate('/entrar')
         return
       }
 
       const novoEstado = !naBiblioteca
+      console.log('🔄 Mudando estado da biblioteca:', naBiblioteca ? 'Remover' : 'Adicionar')
       setNaBiblioteca(novoEstado)
 
       if (novoEstado) {
-        await supabase
+        console.log('➕ Adicionando à biblioteca:', {
+          usuario_id: user.id,
+          obra_id: obra.obr_id,
+          obr_nome: obra.obr_nome
+        })
+        const { data, error } = await supabase
           .from('biblioteca_usuario')
           .insert({
             usuario_id: user.id,
@@ -72,15 +91,31 @@ export default function ObraDetalhe() {
             obr_imagem: obra.obr_imagem,
             data_adicionada: new Date().toISOString()
           })
+
+        if (error) {
+          console.error('❌ Erro ao adicionar à biblioteca:', error)
+          throw error
+        }
+        console.log('✅ Adicionado à biblioteca com sucesso!', data)
       } else {
-        await supabase
+        console.log('➖ Removendo da biblioteca:', {
+          usuario_id: user.id,
+          obra_id: obra.obr_id
+        })
+        const { error } = await supabase
           .from('biblioteca_usuario')
           .delete()
           .eq('usuario_id', user.id)
           .eq('obra_id', obra.obr_id)
+
+        if (error) {
+          console.error('❌ Erro ao remover da biblioteca:', error)
+          throw error
+        }
+        console.log('✅ Removido da biblioteca com sucesso!')
       }
     } catch (err) {
-      console.error('Erro:', err)
+      console.error('❌ Erro geral:', err)
       setNaBiblioteca(!naBiblioteca)
     }
   }

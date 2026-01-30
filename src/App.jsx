@@ -12,6 +12,7 @@ import Login from './components/Login'
 import Perfil from './components/Perfil'
 import BottomBar from './components/BottomBar'
 import Capitulo from './components/Capitulo'
+import AuthDebug from './components/AuthDebug'
 
 function Biblioteca() {
   return (
@@ -112,6 +113,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Debug de autenticação */}
+      <AuthDebug />
     </div>
   )
 }
