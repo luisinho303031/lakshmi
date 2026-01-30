@@ -1070,8 +1070,7 @@ h1 {
   }
 
   .search-container {
-    width: 44px !important;
-    height: 44px;
+    width: auto!important;
     flex: 0 0 auto;
     border-radius: 50% !important;
     background: transparent;
@@ -1122,6 +1121,7 @@ h1 {
     align-items: center;
     justify-content: center;
     color: #a1a1aa;
+    margin-right: 8px;
   }
 
   .search-container.expanded .search-icon {
