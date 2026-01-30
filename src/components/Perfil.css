@@ -286,3 +286,98 @@
         font-size: 0.95rem;
     }
 }
+
+/* Histórico List */
+.historico-list {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.historico-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.historico-date-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.historico-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .historico-items {
+        grid-template-columns: 1fr;
+    }
+}
+
+.historico-item-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.historico-item {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    transition: all 0.2s;
+}
+
+.historico-item:hover {
+    transform: translateY(-2px);
+}
+
+.historico-cover-container {
+    width: 80px;
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.historico-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #18181b;
+}
+
+.historico-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+.historico-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.historico-chapter {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+}
+
+.historico-time {
+    font-size: 0.75rem;
+    color: #71717a;
+}

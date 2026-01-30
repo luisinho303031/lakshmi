@@ -89,6 +89,7 @@
   cursor: pointer;
   transition: background 0.2s;
   color: #e7e9ea;
+  text-decoration: none;
 }
 
 .topbar-user-button i {
@@ -194,11 +195,11 @@
   backface-visibility: hidden;
   transform: translateZ(0);
   -webkit-font-smoothing: subpixel-antialiased;
+  border: none;
 }
 
 .topbar-entrar:hover {
   background: #e4e4e7;
-  transform: scale(1.02);
 }
 
 /* Mobile Hamburger */

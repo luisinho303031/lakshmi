@@ -20,7 +20,7 @@ export default function ObraRecentes() {
   const contextMenuRef = useRef(null)
   const toastTimeoutRef = useRef(null)
 
-  const CDN_ROOT = 'https://api.verdinha.wtf/cdn'
+  const CDN_ROOT = '/cdn-tenrai'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   // Detectar mudança de tamanho de tela
@@ -56,7 +56,7 @@ export default function ObraRecentes() {
         ]
 
         const promises = slugs.map(slug =>
-          fetch(`/api-verdinha/obras/${slug}`, {
+          fetch(`/api-tenrai/obras/${slug}`, {
             headers: {
               Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
               Accept: 'application/json'

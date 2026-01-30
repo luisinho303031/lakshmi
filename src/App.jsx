@@ -1,18 +1,20 @@
 import React, { useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './lib/supabaseClient'
+import { useAuth } from './contexts/AuthContext'
+
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
+import BottomBar from './components/BottomBar'
+
 import ObraRecentes from './components/ObraRecentes'
 import ObraNavegar from './components/ObraNavegar'
 import ObraTodas from './components/ObraTodas'
 import ObraDetalhe from './components/ObraDetalhe'
+import Capitulo from './components/Capitulo'
 
 import Login from './components/Login'
 import Perfil from './components/Perfil'
-import BottomBar from './components/BottomBar'
-import Capitulo from './components/Capitulo'
-// import AuthDebug from './components/AuthDebug'
 
 function Biblioteca() {
   return (
@@ -60,33 +62,35 @@ function Configuracoes() {
   )
 }
 
-import { useAuth } from './contexts/AuthContext'
-
 export default function App() {
-  const { loading } = useAuth()
+  const { user, loading } = useAuth()
   const location = useLocation()
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#000',
-        color: '#fff',
-        fontSize: '1rem',
-        fontFamily: 'sans-serif'
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <div className="spinner" style={{
-            width: '30px',
-            height: '30px',
-            border: '1px solid #303030',
-            borderTopColor: '#f0f0f0',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          backgroundColor: '#000',
+          color: '#fff',
+          fontFamily: 'sans-serif'
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              width: '30px',
+              height: '30px',
+              border: '2px solid #333',
+              borderTopColor: '#fff',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1rem'
+            }}
+          />
           <span>Carregando Lakshmi...</span>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
@@ -106,19 +110,27 @@ export default function App() {
   return (
     <div className={`app ${isReading ? 'reading-mode' : ''}`}>
       {!hideNav && <Sidebar onLogoutClick={() => setShowLogoutModal(true)} />}
-      {!hideNav && <div className="mobile-topbar-wrapper"><TopBar onLogoutClick={() => setShowLogoutModal(true)} /></div>}
+      {!hideNav && (
+        <div className="mobile-topbar-wrapper">
+          <TopBar onLogoutClick={() => setShowLogoutModal(true)} />
+        </div>
+      )}
       {!hideNav && <BottomBar />}
+
       <main className="content">
         <Routes>
           <Route path="/" element={<Navigate to="/inicio" replace />} />
-          <Route path="/biblioteca" element={<Biblioteca />} />
           <Route path="/inicio" element={<Inicio />} />
+          <Route path="/biblioteca" element={<Biblioteca />} />
           <Route path="/historico" element={<Historico />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/todas" element={<Todas />} />
           <Route path="/obra/:obraNome" element={<ObraDetalhe />} />
           <Route path="/cap/:capId" element={<Capitulo />} />
-          <Route path="/perfil" element={<Perfil />} />
+          <Route
+            path="/perfil"
+            element={user ? <Perfil /> : <Navigate to="/entrar" replace />}
+          />
           <Route path="/entrar" element={<Login />} />
         </Routes>
       </main>
@@ -145,9 +157,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {/* Debug de autenticação */}
-      {/* <AuthDebug /> */}
     </div>
   )
 }

@@ -36,8 +36,18 @@ export default function Sidebar({ onLogoutClick }) {
   return (
     <aside className="sidebar">
       <div className="site-name">
-        <Link to="/inicio">
-          <img src={logo} alt="Lakshmi" className="site-logo" />
+        <Link to="/inicio" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#fff', letterSpacing: '-0.05em' }}>TENRAI</span>
+          <span style={{
+            fontSize: '0.65rem',
+            fontWeight: '800',
+            color: '#000',
+            background: '#fff',
+            borderRadius: '999px',
+            padding: '2px 8px',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase'
+          }}>LEITOR</span>
         </Link>
       </div>
 

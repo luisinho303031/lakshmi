@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import './ObraDetalhe.css'
@@ -13,8 +13,11 @@ export default function ObraDetalhe() {
   const [error, setError] = useState(null)
   const [naBiblioteca, setNaBiblioteca] = useState(false)
   const [ordenAscendente, setOrdenAscendente] = useState(false)
+  const [filtroCapitulos, setFiltroCapitulos] = useState('todos')
+  const [capitulosLidos, setCapitulosLidos] = useState(new Set())
+  const [ultimoCapitulo, setUltimoCapitulo] = useState(null)
 
-  const CDN_ROOT = 'https://api.verdinha.wtf/cdn'
+  const CDN_ROOT = '/cdn-tenrai'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export default function ObraDetalhe() {
       try {
         setLoading(true)
         console.log('🔍 Buscando obra:', obraNome, 'User:', user ? user.id : 'null', 'AuthLoading:', authLoading)
-        const res = await fetch(`/api-verdinha/obras/${obraNome}`, {
+        const res = await fetch(`/api-tenrai/obras/${obraNome}`, {
           headers: {
             Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
             Accept: 'application/json'
@@ -32,26 +35,28 @@ export default function ObraDetalhe() {
         const data = await res.json()
         setObra(data)
 
-        // ⚠️ Só verificar biblioteca se a autenticação já terminou de carregar
         if (!authLoading && user) {
-          console.log('✅ User disponível, verificando biblioteca para obra:', data.obr_id)
-          const { data: bib, error } = await supabase
+          // Library
+          const { data: bib } = await supabase
             .from('biblioteca_usuario')
             .select('id')
             .eq('usuario_id', user.id)
             .eq('obra_id', data.obr_id)
             .limit(1)
+          setNaBiblioteca(bib && bib.length > 0)
 
-          if (error) {
-            console.error('❌ Erro ao verificar biblioteca:', error)
-          } else {
-            console.log('📚 Resultado da biblioteca:', bib)
-            setNaBiblioteca(bib && bib.length > 0)
+          // History
+          const { data: hist } = await supabase
+            .from('historico_leitura')
+            .select('capitulo_id, data_leitura')
+            .eq('usuario_id', user.id)
+            .eq('obra_id', data.obr_id)
+            .order('data_leitura', { ascending: false })
+
+          if (hist && hist.length > 0) {
+            setCapitulosLidos(new Set(hist.map(h => h.capitulo_id)))
+            setUltimoCapitulo(hist[0].capitulo_id)
           }
-        } else if (authLoading) {
-          console.log('⏳ Aguardando autenticação terminar...')
-        } else {
-          console.log('❌ User não disponível, não verificando biblioteca')
         }
       } catch (err) {
         setError(err.message)
@@ -62,6 +67,21 @@ export default function ObraDetalhe() {
 
     fetchObra()
   }, [obraNome, user, authLoading])
+
+  const getProcessedChapters = () => {
+    if (!obra?.capitulos) return []
+
+    let filtered = obra.capitulos
+    if (filtroCapitulos === 'lidos') {
+      filtered = filtered.filter(cap => capitulosLidos.has(cap.cap_id))
+    } else if (filtroCapitulos === 'nao_lidos') {
+      filtered = filtered.filter(cap => !capitulosLidos.has(cap.cap_id))
+    }
+
+    return filtered.sort((a, b) => ordenAscendente ? a.cap_numero - b.cap_numero : b.cap_numero - a.cap_numero)
+  }
+
+  const processedChapters = getProcessedChapters()
 
   const handleAddToLibrary = async () => {
     try {
@@ -152,6 +172,20 @@ export default function ObraDetalhe() {
     return date.toLocaleDateString('pt-BR')
   }
 
+  const handleIniciar = () => {
+    if (ultimoCapitulo) {
+      navigate(`/cap/${ultimoCapitulo}`)
+      return
+    }
+
+    // Find first chapter
+    if (obra && obra.capitulos && obra.capitulos.length > 0) {
+      const sorted = [...obra.capitulos].sort((a, b) => a.cap_numero - b.cap_numero)
+      const first = sorted[0]
+      navigate(`/cap/${first.cap_id}`)
+    }
+  }
+
   const rawName = obra.obr_imagem ? String(obra.obr_imagem) : ''
   const imgBasename = rawName ? rawName.split('/').pop().trim() : null
   const obraId = obra.obr_id != null ? String(obra.obr_id).trim() : ''
@@ -166,16 +200,22 @@ export default function ObraDetalhe() {
   return (
     <div className="obra-detalhe-container">
       <div className="obra-content-wrapper">
-        {/* Seção principal: capa + titulo */}
-        <div className="obra-header-section">
-          {/* Capa */}
-          <div className="obra-capa-container">
-            <img src={imgUrl} alt={obra.obr_nome} className="obra-capa" />
+        {/* Título no topo */}
+        <h1 className="obra-titulo">{obra.obr_nome}</h1>
 
-            {/* Botões de ação */}
+        {/* Grid: Capa + Info */}
+        <div className="obra-main-grid">
+          {/* Coluna Esquerda: Capa + Botões */}
+          <div className="obra-left-column">
+            <div className="obra-capa-container">
+              <img src={imgUrl} alt={obra.obr_nome} className="obra-capa" />
+            </div>
+
+            {/* Botões empilhados */}
             <div className="obra-actions">
-              <button className="btn-iniciar">
+              <button className="btn-iniciar" onClick={handleIniciar}>
                 <i className="fas fa-play"></i>
+                <span>{ultimoCapitulo ? 'Continuar' : 'Iniciar'}</span>
               </button>
               <button
                 className={`btn-biblioteca ${naBiblioteca ? 'active' : ''}`}
@@ -183,59 +223,118 @@ export default function ObraDetalhe() {
                 title={naBiblioteca ? 'Remover da biblioteca' : 'Adicionar à biblioteca'}
               >
                 <i className="fas fa-bookmark"></i>
+                <span>{naBiblioteca ? 'Na Biblioteca' : 'Adc. à Biblioteca'}</span>
               </button>
+            </div>
+
+            {/* Metadata Info (Format / Status) */}
+            <div className="obra-metadata-list">
+              {obra.formato && (
+                <div className="meta-item">
+                  <div className="meta-label">
+                    <span>Formato</span>
+                    <div className="meta-line"></div>
+                  </div>
+                  <div className="meta-value">{obra.formato.formt_nome}</div>
+                </div>
+              )}
+              {obra.status && (
+                <div className="meta-item">
+                  <div className="meta-label">
+                    <span>Situação</span>
+                    <div className="meta-line"></div>
+                  </div>
+                  <div className="meta-value">{obra.status.stt_nome}</div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Info Título e Autor */}
-          <div className="obra-titulo-container">
-            {/* Título */}
-            <h1 className="obra-titulo">{obra.obr_nome}</h1>
-          </div>
-        </div>
-
-        {/* Seção de detalhes: descrição, gêneros, etc */}
-        <div className="obra-details-section">
-          {/* Descrição */}
-          <p className="obra-descricao">{obra.obr_descricao}</p>
-
-          {/* Gêneros/Tags */}
-          <div className="obra-generos">
-            {obra.tags && obra.tags.map(tag => (
-              <span key={tag.tag_id} className="genero-tag">{tag.tag_nome}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* Seção de capítulos */}
-        <div className="obra-capitulos-section">
-          <div className="capitulos-header">
-            <div className="capitulos-count">{obra.capitulos?.length || 0}</div>
-            <button
-              className="btn-inverter-ordem"
-              onClick={() => setOrdenAscendente(!ordenAscendente)}
-              title={ordenAscendente ? 'Ordem decrescente' : 'Ordem crescente'}
-            >
-              <i className={`fas fa-arrow-${ordenAscendente ? 'up' : 'down'}`}></i>
-            </button>
-          </div>
-          <div className="obra-capitulos">
-            {obra.capitulos && obra.capitulos.length > 0 ? (
-              obra.capitulos.sort((a, b) => ordenAscendente ? a.cap_numero - b.cap_numero : b.cap_numero - a.cap_numero).map((cap) => (
-                <div key={cap.cap_id} className="capitulo-item">
-                  <div className="cap-info">
-                    <span className="cap-numero">Cap. {cap.cap_numero}</span>
-                    <span className="cap-data">{formatarDataRelativa(cap.cap_liberar_em || cap.cap_criado_em)}</span>
-                  </div>
-                  <div className="cap-source" style={{ color: 'rgba(255, 255, 255, 0.5)', gap: '6px', fontSize: '0.85rem', alignItems: 'center' }}>
-                    <i className="fas fa-eye"></i>
-                    <span>{cap.cap_visualizacoes_geral || 0}</span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p style={{ color: 'rgba(230, 238, 248, 0.5)' }}>Nenhum capítulo disponível</p>
+          {/* Coluna Direita: Gêneros + Descrição + Capítulos */}
+          <div className="obra-right-column">
+            {/* Gêneros/Tags */}
+            {obra.tags && obra.tags.length > 0 && (
+              <div className="obra-generos">
+                <i className="fas fa-tags generos-icon"></i>
+                {obra.tags.slice(0, 5).map((tag, index, arr) => (
+                  <React.Fragment key={tag.tag_id}>
+                    <span className="genero-tag">{tag.tag_nome}</span>
+                    {index < arr.length - 1 && <span className="genero-separator">•</span>}
+                  </React.Fragment>
+                ))}
+              </div>
             )}
+
+            {/* Descrição */}
+            <p className="obra-descricao">{obra.obr_descricao}</p>
+
+            {/* Linha divisória */}
+            <div className="obra-divider"></div>
+
+            {/* Seção de capítulos */}
+            <div className="obra-capitulos-section">
+              <div className="capitulos-header">
+                <div className="capitulos-tabs">
+                  <button
+                    className={`tab-item ${filtroCapitulos === 'todos' ? 'active' : ''}`}
+                    onClick={() => setFiltroCapitulos('todos')}
+                  >
+                    Todos
+                  </button>
+                  <button
+                    className={`tab-item ${filtroCapitulos === 'lidos' ? 'active' : ''}`}
+                    onClick={() => setFiltroCapitulos('lidos')}
+                  >
+                    Lidos
+                  </button>
+                  <button
+                    className={`tab-item ${filtroCapitulos === 'nao_lidos' ? 'active' : ''}`}
+                    onClick={() => setFiltroCapitulos('nao_lidos')}
+                  >
+                    Não lidos
+                  </button>
+                </div>
+                <div className="ordem-buttons">
+                  <button
+                    className={`btn-ordem ${!ordenAscendente ? 'active' : ''}`}
+                    onClick={() => setOrdenAscendente(false)}
+                    title="Ordem decrescente"
+                  >
+                    <i className="fas fa-arrow-down"></i>
+                  </button>
+                  <button
+                    className={`btn-ordem ${ordenAscendente ? 'active' : ''}`}
+                    onClick={() => setOrdenAscendente(true)}
+                    title="Ordem crescente"
+                  >
+                    <i className="fas fa-arrow-up"></i>
+                  </button>
+                </div>
+              </div>
+              <div className="obra-capitulos">
+                {processedChapters.length > 0 ? (
+                  processedChapters.map((cap) => {
+                    const lido = capitulosLidos.has(cap.cap_id)
+                    return (
+                      <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="capitulo-item" style={{ textDecoration: 'none' }}>
+                        <div className="cap-info">
+                          <span className="cap-numero" style={{ color: lido ? '#a1a1aa' : '#ffffff' }}>Cap. {cap.cap_numero}</span>
+                          <span className="cap-data">{formatarDataRelativa(cap.cap_liberar_em || cap.cap_criado_em)}</span>
+                        </div>
+                        <div className="cap-source" style={{ color: lido ? '#f0f0f0' : 'transparent', display: 'flex', gap: '6px', fontSize: '0.9rem', alignItems: 'center', minWidth: '20px', }}>
+                          {lido && <i className="fas fa-check"></i>}
+                        </div>
+                      </Link>
+                    )
+                  })
+                ) : (
+                  <p style={{ color: 'rgba(230, 238, 248, 0.5)' }}>
+                    {filtroCapitulos === 'todos' ? 'Nenhum capítulo disponível' :
+                      filtroCapitulos === 'lidos' ? 'Nenhum capítulo lido' : 'Todos os capítulos lidos'}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -12,12 +12,16 @@ export default function Perfil() {
     const [libraryItems, setLibraryItems] = useState([])
     const [libraryLoading, setLibraryLoading] = useState(false)
 
+    // History State
+    const [historyItems, setHistoryItems] = useState([])
+    const [historyLoading, setHistoryLoading] = useState(false)
+
     // Profile State
     const [profileData, setProfileData] = useState({ avatar_url: null, banner_url: null })
     const [uploading, setUploading] = useState(false)
     const menuRef = useRef(null)
 
-    const CDN_ROOT = 'https://api.verdinha.wtf/cdn'
+    const CDN_ROOT = '/cdn-tenrai'
     const IMG_BASE = `${CDN_ROOT}/scans`
 
     const slugify = (str) => {
@@ -118,6 +122,37 @@ export default function Perfil() {
             fetchLibrary()
         } else {
             console.log('⏭️ Biblioteca - Pulando busca. Tab:', activeTab, 'User:', !!user, 'AuthLoading:', authLoading)
+        }
+    }, [activeTab, user, authLoading])
+
+    // Fetch History when tab is active
+    useEffect(() => {
+        if (activeTab === 'historico' && user && !authLoading) {
+            const fetchHistory = async () => {
+                setHistoryLoading(true)
+                console.log('📖 Buscando histórico para user:', user.id)
+                try {
+                    const { data: historyData, error } = await supabase
+                        .from('historico_leitura')
+                        .select('*')
+                        .eq('usuario_id', user.id)
+                        .order('data_leitura', { ascending: false })
+
+                    if (error) {
+                        console.error('❌ Erro ao buscar histórico:', error)
+                        throw error
+                    }
+
+                    console.log('✅ Histórico carregado:', historyData?.length || 0, 'itens')
+                    setHistoryItems(historyData || [])
+                } catch (err) {
+                    console.error('❌ Erro ao buscar histórico:', err)
+                    setHistoryItems([])
+                } finally {
+                    setHistoryLoading(false)
+                }
+            }
+            fetchHistory()
         }
     }, [activeTab, user, authLoading])
 
@@ -389,9 +424,108 @@ export default function Perfil() {
                 )}
 
                 {activeTab === 'historico' && (
-                    <div className="perfil-section perfil-empty-state">
-                        <i className="fas fa-history"></i>
-                        <p>Nada ainda!</p>
+                    <div className="perfil-section">
+                        {historyLoading ? (
+                            <p>Carregando histórico...</p>
+                        ) : historyItems.length === 0 ? (
+                            <div className="perfil-empty-state">
+                                <i className="fas fa-history"></i>
+                                <p>Nada ainda!</p>
+                            </div>
+                        ) : (
+                            <div className="historico-list">
+                                {(() => {
+                                    // Agrupar por data
+                                    const groupedByDate = historyItems.reduce((acc, item) => {
+                                        const dataLeitura = new Date(item.data_leitura)
+                                        const hoje = new Date()
+                                        hoje.setHours(0, 0, 0, 0)
+
+                                        const ontem = new Date(hoje)
+                                        ontem.setDate(ontem.getDate() - 1)
+
+                                        const dataItem = new Date(dataLeitura)
+                                        dataItem.setHours(0, 0, 0, 0)
+
+                                        let label
+                                        if (dataItem.getTime() === hoje.getTime()) {
+                                            label = 'Hoje'
+                                        } else if (dataItem.getTime() === ontem.getTime()) {
+                                            label = 'Ontem'
+                                        } else {
+                                            // Dias da semana
+                                            const diffDays = Math.floor((hoje - dataItem) / (1000 * 60 * 60 * 24))
+                                            if (diffDays < 7) {
+                                                const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+                                                label = diasSemana[dataItem.getDay()]
+                                            } else {
+                                                label = dataItem.toLocaleDateString('pt-BR', {
+                                                    day: '2-digit',
+                                                    month: 'short'
+                                                })
+                                            }
+                                        }
+
+                                        if (!acc[label]) acc[label] = []
+                                        acc[label].push(item)
+                                        return acc
+                                    }, {})
+
+                                    return Object.entries(groupedByDate).map(([dateLabel, items]) => (
+                                        <div key={dateLabel} className="historico-group">
+                                            <h3 className="historico-date-label">{dateLabel}</h3>
+                                            <div className="historico-items">
+                                                {items.map((item) => {
+                                                    const rawName = item.obr_imagem ? String(item.obr_imagem) : ''
+
+                                                    let imgUrl
+                                                    if (rawName && rawName.includes('/')) {
+                                                        imgUrl = `${CDN_ROOT}/${rawName.replace(/^\/+/, '')}`
+                                                    } else if (rawName) {
+                                                        const obraId = item.obra_id != null ? String(item.obra_id).trim() : ''
+                                                        imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(obraId)}/${encodeURIComponent(rawName)}`
+                                                    }
+
+                                                    const horaLeitura = new Date(item.data_leitura).toLocaleTimeString('pt-BR', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })
+
+                                                    return (
+                                                        <Link
+                                                            key={item.id}
+                                                            to={`/obra/${slugify(item.obr_nome)}`}
+                                                            className="historico-item-link"
+                                                        >
+                                                            <div className="historico-item">
+                                                                <div className="historico-cover-container">
+                                                                    <img
+                                                                        src={imgUrl}
+                                                                        alt={item.obr_nome}
+                                                                        className="historico-cover"
+                                                                        onError={(e) => {
+                                                                            e.currentTarget.src = ''
+                                                                            e.currentTarget.style.background = '#111'
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className="historico-info">
+                                                                    <div className="historico-title">{item.obr_nome}</div>
+                                                                    <div className="historico-chapter">
+                                                                        Capítulo {item.cap_numero}
+                                                                    </div>
+                                                                    <div className="historico-time">{horaLeitura}</div>
+                                                                </div>
+                                                            </div>
+                                                        </Link>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))
+                                })()}
+                            </div>
+                        )}
                     </div>
                 )}
 

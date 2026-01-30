@@ -5,10 +5,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api-verdinha': {
+      '/api-tenrai': {
         target: 'https://api.verdinha.wtf',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-verdinha/, '')
+        rewrite: (path) => path.replace(/^\/api-tenrai/, '')
+      },
+      '/cdn-tenrai': {
+        target: 'https://api.verdinha.wtf/cdn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/cdn-tenrai/, '')
       }
     }
   },

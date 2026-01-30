@@ -15,6 +15,7 @@ export default function ObraNavegar() {
   const [contextMenu, setContextMenu] = useState(null)
   const [selectedObra, setSelectedObra] = useState(null)
   const [bibliotecaObras, setBibliotecaObras] = useState([])
+  const [capitulosLidos, setCapitulosLidos] = useState(new Set())
   const [toast, setToast] = useState(null)
   const sentinelRef = useRef(null)
   const revalidatingRef = useRef(false)
@@ -26,7 +27,7 @@ export default function ObraNavegar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 520)
 
-  const CDN_ROOT = 'https://api.verdinha.wtf/cdn'
+  const CDN_ROOT = '/cdn-tenrai'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   // fetch obras for current page (infinite scroll)
@@ -52,7 +53,7 @@ export default function ObraNavegar() {
         if (page === 1) setLoading(true)
         else setLoadingMore(true)
 
-        const res = await fetch(`/api-verdinha/obras/atualizacoes?pagina=${page}&limite=24&gen_id=1`, {
+        const res = await fetch(`/api-tenrai/obras/atualizacoes?pagina=${page}&limite=24&gen_id=1`, {
           headers: {
             Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
             Accept: 'application/json'
@@ -88,27 +89,48 @@ export default function ObraNavegar() {
     return () => controller.abort()
   }, [page])
 
-  // Buscar biblioteca do usuário
+  // Buscar biblioteca e histórico do usuário
   useEffect(() => {
-    const fetchBiblioteca = async () => {
+    const fetchUserData = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        const { data, error: err } = await supabase
+        // 1. Biblioteca
+        const { data: bibData, error: bibErr } = await supabase
           .from('biblioteca_usuario')
           .select('obra_id')
           .eq('usuario_id', user.id)
 
-        if (err) throw err
-        setBibliotecaObras((data || []).map(item => item.obra_id))
+        if (!bibErr && bibData) {
+          setBibliotecaObras(bibData.map(item => item.obra_id))
+        }
+
+        // 2. Histórico de leitura (para os lançamentos carregados)
+        if (obras.length > 0) {
+          const obraIds = obras.map(o => o.obr_id)
+          const { data: histData, error: histErr } = await supabase
+            .from('historico_leitura')
+            .select('capitulo_id')
+            .eq('usuario_id', user.id)
+            .in('obra_id', obraIds)
+
+          if (!histErr && histData) {
+            const lidosSet = new Set(histData.map(h => h.capitulo_id))
+            setCapitulosLidos(prev => {
+              const newSet = new Set(prev)
+              histData.forEach(h => newSet.add(h.capitulo_id))
+              return newSet
+            })
+          }
+        }
       } catch (err) {
-        console.error('Erro ao buscar biblioteca:', err)
+        console.error('Erro ao buscar dados do usuário:', err)
       }
     }
 
-    fetchBiblioteca()
-  }, [])
+    fetchUserData()
+  }, [obras]) // Depend on obras to refetch when infinite scroll adds more
 
   // Detect resize
   useEffect(() => {
@@ -373,7 +395,10 @@ export default function ObraNavegar() {
                         return (
                           <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="lancamento-chapter-link">
                             <div className="lancamento-chapter">
-                              <div className="lancamento-chapter-name">{capName}</div>
+                              <div className="lancamento-chapter-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ color: capitulosLidos.has(cap.cap_id) ? '#a1a1aa' : '#e4e4e7' }}>{capName}</span>
+                                {capitulosLidos.has(cap.cap_id) && <i className="fas fa-check" style={{ color: '#f0f0f0', fontSize: '0.8rem' }}></i>}
+                              </div>
                               <div className="lancamento-chapter-date">{timeText}</div>
                             </div>
                           </Link>

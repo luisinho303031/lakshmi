@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabaseClient'
 import LoginModal from './LoginModal'
 import './TopBar.css'
 import logo from '../logo.png'
@@ -10,8 +11,28 @@ export default function TopBar({ onLogoutClick }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState(null)
 
-  const userAvatar = user?.user_metadata?.avatar_url || null
+  useEffect(() => {
+    if (user) {
+      // Tentar pegar do metadata primeiro (fallback)
+      setAvatarUrl(user.user_metadata?.avatar_url || null)
+
+      // Buscar do banco (user_profiles) para ter a versão mais atual
+      const fetchProfileResult = async () => {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (data?.avatar_url) {
+          setAvatarUrl(data.avatar_url)
+        }
+      }
+      fetchProfileResult()
+    }
+  }, [user])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,8 +51,18 @@ export default function TopBar({ onLogoutClick }) {
     <>
       <header className={`topbar${isScrolled ? ' scrolled' : ''}`}>
         <div className="topbar-logo">
-          <Link to="/inicio">
-            <img src={logo} alt="Lakshmi" className="logo-img" />
+          <Link to="/inicio" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff', letterSpacing: '-0.05em' }}>TENRAI</span>
+            <span style={{
+              fontSize: '0.6rem',
+              fontWeight: '400',
+              color: '#000',
+              background: '#fff',
+              borderRadius: '999px',
+              padding: '2px 8px',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase'
+            }}>LEITOR</span>
           </Link>
         </div>
         <nav className="topbar-menu">
@@ -50,8 +81,8 @@ export default function TopBar({ onLogoutClick }) {
             user ? (
               <div className="topbar-user-wrapper">
                 <Link to="/perfil" className="topbar-user-button">
-                  {userAvatar ? (
-                    <img src={userAvatar} alt="Avatar" className="user-avatar" />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="user-avatar" />
                   ) : (
                     <div className="user-avatar-placeholder">
                       {user.email?.[0].toUpperCase()}
