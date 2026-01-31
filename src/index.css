@@ -115,6 +115,16 @@ html {
   max-width: none !important;
 }
 
+.app.login-mode .content {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  max-width: none !important;
+}
+
+.app.login-mode {
+  max-width: none !important;
+}
+
 .search-row {
   display: flex;
   gap: 16px;

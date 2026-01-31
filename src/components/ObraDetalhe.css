@@ -1,5 +1,6 @@
 .obra-detalhe-container {
-  width: 800px;
+  max-width: 800px;
+  width: 100%;
   min-height: 100vh;
   position: relative;
   background-color: #000;
@@ -369,13 +370,178 @@
   }
 }
 
+/* Mobile-only elements - hidden on desktop */
+.obra-mobile-header,
+.obra-mobile-tabs,
+.mobile-tab-content {
+  display: none;
+}
+
+/* Desktop-only content - shown by default */
+.desktop-content {
+  display: block;
+}
+
 @media (max-width: 768px) {
-  .obra-content-wrapper {
-    padding: 20px;
+
+  /* Hide desktop elements on mobile */
+  .obra-titulo,
+  .obra-main-grid,
+  .desktop-content {
+    display: none;
   }
 
-  .obra-titulo {
-    font-size: 1.8rem;
+  /* Show mobile elements */
+  .obra-mobile-header,
+  .obra-mobile-tabs,
+  .mobile-tab-content {
+    display: block;
+  }
+
+  /* Mobile Header: Cover + Title side by side */
+  .obra-mobile-header {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+
+  .obra-capa-container-mobile {
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .obra-capa-container-mobile .obra-capa {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #18181b;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .obra-title-mobile {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .obra-titulo-mobile {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 0;
+    color: #ffffff;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  /* Mobile Action Buttons */
+  .obra-actions-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 8px;
+  }
+
+  .btn-iniciar-mobile {
+    background: transparent;
+    color: #ffffff;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    padding: 12px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-iniciar-mobile:hover {
+    border-bottom-color: #ffffff;
+  }
+
+  .btn-biblioteca-mobile {
+    background: transparent;
+    color: #a1a1aa;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    padding: 12px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-biblioteca-mobile:hover {
+    color: #ffffff;
+    border-bottom-color: #ffffff;
+  }
+
+  .btn-biblioteca-mobile.active {
+    color: #ffffff;
+  }
+
+  /* Mobile Tabs */
+  .obra-mobile-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #a1a1aa;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 12px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mobile-tab.active {
+    color: #ffffff;
+    border-bottom-color: #ffffff;
+  }
+
+  /* Mobile Tab Content */
+  .mobile-tab-content {
+    display: block !important;
+  }
+
+  .info-content,
+  .capitulos-content-mobile {
+    display: block !important;
+  }
+
+  /* Ensure genres and description are visible */
+  .mobile-tab-content .obra-generos,
+  .mobile-tab-content .obra-descricao {
+    display: flex !important;
+  }
+
+  .mobile-tab-content .obra-descricao {
+    display: block !important;
+    margin-top: 10px;
+  }
+
+
+  .obra-main-grid {
+    gap: 20px;
+    display: none !important;
   }
 
   .obra-left-column {
@@ -388,15 +554,40 @@
     margin: 0 auto;
   }
 
+  .obra-right-column {
+    gap: 12px;
+    display: block !important;
+  }
+
+  .obra-generos {
+    display: none !important;
+  }
+
+  .genero-tag {
+    font-size: 0.8rem;
+  }
+
+  .obra-descricao {
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
   .capitulo-item {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 14px;
+    grid-template-columns: 1fr auto !important;
+    gap: 12px !important;
+    padding: 14px 0 !important;
+  }
+
+  .cap-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .cap-source {
-    justify-content: flex-start;
-    margin-top: 4px;
+    justify-content: center !important;
+    margin-top: 0 !important;
+    align-self: center;
   }
 }
 

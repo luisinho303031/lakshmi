@@ -16,6 +16,7 @@ export default function ObraDetalhe() {
   const [filtroCapitulos, setFiltroCapitulos] = useState('todos')
   const [capitulosLidos, setCapitulosLidos] = useState(new Set())
   const [ultimoCapitulo, setUltimoCapitulo] = useState(null)
+  const [activeTab, setActiveTab] = useState('info') // 'info' or 'capitulos'
 
   const CDN_ROOT = '/cdn-tenrai'
   const IMG_BASE = `${CDN_ROOT}/scans`
@@ -200,8 +201,141 @@ export default function ObraDetalhe() {
   return (
     <div className="obra-detalhe-container">
       <div className="obra-content-wrapper">
-        {/* Título no topo */}
+        {/* Mobile Header: Capa + Título */}
+        <div className="obra-mobile-header">
+          <div className="obra-capa-container-mobile">
+            <img src={imgUrl} alt={obra.obr_nome} className="obra-capa" />
+          </div>
+          <div className="obra-title-mobile">
+            <h1 className="obra-titulo-mobile">{obra.obr_nome}</h1>
+
+            {/* Mobile Action Buttons */}
+            <div className="obra-actions-mobile">
+              <button className="btn-iniciar-mobile" onClick={handleIniciar}>
+                <i className="fas fa-play"></i>
+                <span>{ultimoCapitulo ? 'Continuar' : 'Iniciar'}</span>
+              </button>
+              <button
+                className={`btn-biblioteca-mobile ${naBiblioteca ? 'active' : ''}`}
+                onClick={handleAddToLibrary}
+                title={naBiblioteca ? 'Remover da biblioteca' : 'Adicionar à biblioteca'}
+              >
+                <i className="fas fa-bookmark"></i>
+                <span>{naBiblioteca ? 'Na Biblioteca' : 'Adicionar à Biblioteca'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Tabs */}
+        <div className="obra-mobile-tabs">
+          <button
+            className={`mobile-tab ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            Informações
+          </button>
+          <button
+            className={`mobile-tab ${activeTab === 'capitulos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('capitulos')}
+          >
+            Capítulos
+          </button>
+        </div>
+
+        {/* Desktop: Título no topo */}
         <h1 className="obra-titulo">{obra.obr_nome}</h1>
+
+        {/* Mobile: Conteúdo condicional baseado na tab */}
+        <div className="mobile-tab-content">
+          {activeTab === 'info' && (
+            <div className="info-content">
+              {/* Gêneros/Tags */}
+              {obra.tags && obra.tags.length > 0 && (
+                <div className="obra-generos">
+                  <i className="fas fa-tags generos-icon"></i>
+                  {obra.tags.slice(0, 5).map((tag, index, arr) => (
+                    <React.Fragment key={tag.tag_id}>
+                      <span className="genero-tag">{tag.tag_nome}</span>
+                      {index < arr.length - 1 && <span className="genero-separator">•</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
+
+              {/* Descrição */}
+              <p className="obra-descricao">{obra.obr_descricao}</p>
+            </div>
+          )}
+
+          {activeTab === 'capitulos' && (
+            <div className="capitulos-content-mobile">
+              <div className="obra-capitulos-section">
+                <div className="capitulos-header">
+                  <div className="capitulos-tabs">
+                    <button
+                      className={`tab-item ${filtroCapitulos === 'todos' ? 'active' : ''}`}
+                      onClick={() => setFiltroCapitulos('todos')}
+                    >
+                      Todos
+                    </button>
+                    <button
+                      className={`tab-item ${filtroCapitulos === 'lidos' ? 'active' : ''}`}
+                      onClick={() => setFiltroCapitulos('lidos')}
+                    >
+                      Lidos
+                    </button>
+                    <button
+                      className={`tab-item ${filtroCapitulos === 'nao_lidos' ? 'active' : ''}`}
+                      onClick={() => setFiltroCapitulos('nao_lidos')}
+                    >
+                      Não lidos
+                    </button>
+                  </div>
+                  <div className="ordem-buttons">
+                    <button
+                      className={`btn-ordem ${!ordenAscendente ? 'active' : ''}`}
+                      onClick={() => setOrdenAscendente(false)}
+                      title="Ordem decrescente"
+                    >
+                      <i className="fas fa-arrow-down"></i>
+                    </button>
+                    <button
+                      className={`btn-ordem ${ordenAscendente ? 'active' : ''}`}
+                      onClick={() => setOrdenAscendente(true)}
+                      title="Ordem crescente"
+                    >
+                      <i className="fas fa-arrow-up"></i>
+                    </button>
+                  </div>
+                </div>
+                <div className="obra-capitulos">
+                  {processedChapters.length > 0 ? (
+                    processedChapters.map((cap) => {
+                      const lido = capitulosLidos.has(cap.cap_id)
+                      return (
+                        <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="capitulo-item" style={{ textDecoration: 'none' }}>
+                          <div className="cap-info">
+                            <span className="cap-numero" style={{ color: lido ? '#a1a1aa' : '#ffffff' }}>Cap. {cap.cap_numero}</span>
+                            <span className="cap-data">{formatarDataRelativa(cap.cap_liberar_em || cap.cap_criado_em)}</span>
+                          </div>
+                          <div className="cap-source" style={{ color: lido ? '#f0f0f0' : 'transparent', display: 'flex', gap: '6px', fontSize: '0.9rem', alignItems: 'center', minWidth: '20px', }}>
+                            {lido && <i className="fas fa-check"></i>}
+                          </div>
+                        </Link>
+                      )
+                    })
+                  ) : (
+                    <p style={{ color: 'rgba(230, 238, 248, 0.5)' }}>
+                      {filtroCapitulos === 'todos' ? 'Nenhum capítulo disponível' :
+                        filtroCapitulos === 'lidos' ? 'Nenhum capítulo lido' : 'Todos os capítulos lidos'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Grid: Capa + Info */}
         <div className="obra-main-grid">
@@ -252,87 +386,90 @@ export default function ObraDetalhe() {
 
           {/* Coluna Direita: Gêneros + Descrição + Capítulos */}
           <div className="obra-right-column">
-            {/* Gêneros/Tags */}
-            {obra.tags && obra.tags.length > 0 && (
-              <div className="obra-generos">
-                <i className="fas fa-tags generos-icon"></i>
-                {obra.tags.slice(0, 5).map((tag, index, arr) => (
-                  <React.Fragment key={tag.tag_id}>
-                    <span className="genero-tag">{tag.tag_nome}</span>
-                    {index < arr.length - 1 && <span className="genero-separator">•</span>}
-                  </React.Fragment>
-                ))}
-              </div>
-            )}
-
-            {/* Descrição */}
-            <p className="obra-descricao">{obra.obr_descricao}</p>
-
-            {/* Linha divisória */}
-            <div className="obra-divider"></div>
-
-            {/* Seção de capítulos */}
-            <div className="obra-capitulos-section">
-              <div className="capitulos-header">
-                <div className="capitulos-tabs">
-                  <button
-                    className={`tab-item ${filtroCapitulos === 'todos' ? 'active' : ''}`}
-                    onClick={() => setFiltroCapitulos('todos')}
-                  >
-                    Todos
-                  </button>
-                  <button
-                    className={`tab-item ${filtroCapitulos === 'lidos' ? 'active' : ''}`}
-                    onClick={() => setFiltroCapitulos('lidos')}
-                  >
-                    Lidos
-                  </button>
-                  <button
-                    className={`tab-item ${filtroCapitulos === 'nao_lidos' ? 'active' : ''}`}
-                    onClick={() => setFiltroCapitulos('nao_lidos')}
-                  >
-                    Não lidos
-                  </button>
+            {/* Desktop: Sempre mostra tudo */}
+            <div className="desktop-content">
+              {/* Gêneros/Tags */}
+              {obra.tags && obra.tags.length > 0 && (
+                <div className="obra-generos">
+                  <i className="fas fa-tags generos-icon"></i>
+                  {obra.tags.slice(0, 5).map((tag, index, arr) => (
+                    <React.Fragment key={tag.tag_id}>
+                      <span className="genero-tag">{tag.tag_nome}</span>
+                      {index < arr.length - 1 && <span className="genero-separator">•</span>}
+                    </React.Fragment>
+                  ))}
                 </div>
-                <div className="ordem-buttons">
-                  <button
-                    className={`btn-ordem ${!ordenAscendente ? 'active' : ''}`}
-                    onClick={() => setOrdenAscendente(false)}
-                    title="Ordem decrescente"
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </button>
-                  <button
-                    className={`btn-ordem ${ordenAscendente ? 'active' : ''}`}
-                    onClick={() => setOrdenAscendente(true)}
-                    title="Ordem crescente"
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </button>
+              )}
+
+              {/* Descrição */}
+              <p className="obra-descricao">{obra.obr_descricao}</p>
+
+              {/* Linha divisória */}
+              <div className="obra-divider"></div>
+
+              {/* Seção de capítulos */}
+              <div className="obra-capitulos-section">
+                <div className="capitulos-header">
+                  <div className="capitulos-tabs">
+                    <button
+                      className={`tab-item ${filtroCapitulos === 'todos' ? 'active' : ''}`}
+                      onClick={() => setFiltroCapitulos('todos')}
+                    >
+                      Todos
+                    </button>
+                    <button
+                      className={`tab-item ${filtroCapitulos === 'lidos' ? 'active' : ''}`}
+                      onClick={() => setFiltroCapitulos('lidos')}
+                    >
+                      Lidos
+                    </button>
+                    <button
+                      className={`tab-item ${filtroCapitulos === 'nao_lidos' ? 'active' : ''}`}
+                      onClick={() => setFiltroCapitulos('nao_lidos')}
+                    >
+                      Não lidos
+                    </button>
+                  </div>
+                  <div className="ordem-buttons">
+                    <button
+                      className={`btn-ordem ${!ordenAscendente ? 'active' : ''}`}
+                      onClick={() => setOrdenAscendente(false)}
+                      title="Ordem decrescente"
+                    >
+                      <i className="fas fa-arrow-down"></i>
+                    </button>
+                    <button
+                      className={`btn-ordem ${ordenAscendente ? 'active' : ''}`}
+                      onClick={() => setOrdenAscendente(true)}
+                      title="Ordem crescente"
+                    >
+                      <i className="fas fa-arrow-up"></i>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="obra-capitulos">
-                {processedChapters.length > 0 ? (
-                  processedChapters.map((cap) => {
-                    const lido = capitulosLidos.has(cap.cap_id)
-                    return (
-                      <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="capitulo-item" style={{ textDecoration: 'none' }}>
-                        <div className="cap-info">
-                          <span className="cap-numero" style={{ color: lido ? '#a1a1aa' : '#ffffff' }}>Cap. {cap.cap_numero}</span>
-                          <span className="cap-data">{formatarDataRelativa(cap.cap_liberar_em || cap.cap_criado_em)}</span>
-                        </div>
-                        <div className="cap-source" style={{ color: lido ? '#f0f0f0' : 'transparent', display: 'flex', gap: '6px', fontSize: '0.9rem', alignItems: 'center', minWidth: '20px', }}>
-                          {lido && <i className="fas fa-check"></i>}
-                        </div>
-                      </Link>
-                    )
-                  })
-                ) : (
-                  <p style={{ color: 'rgba(230, 238, 248, 0.5)' }}>
-                    {filtroCapitulos === 'todos' ? 'Nenhum capítulo disponível' :
-                      filtroCapitulos === 'lidos' ? 'Nenhum capítulo lido' : 'Todos os capítulos lidos'}
-                  </p>
-                )}
+                <div className="obra-capitulos">
+                  {processedChapters.length > 0 ? (
+                    processedChapters.map((cap) => {
+                      const lido = capitulosLidos.has(cap.cap_id)
+                      return (
+                        <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="capitulo-item" style={{ textDecoration: 'none' }}>
+                          <div className="cap-info">
+                            <span className="cap-numero" style={{ color: lido ? '#a1a1aa' : '#ffffff' }}>Cap. {cap.cap_numero}</span>
+                            <span className="cap-data">{formatarDataRelativa(cap.cap_liberar_em || cap.cap_criado_em)}</span>
+                          </div>
+                          <div className="cap-source" style={{ color: lido ? '#f0f0f0' : 'transparent', display: 'flex', gap: '6px', fontSize: '0.9rem', alignItems: 'center', minWidth: '20px', }}>
+                            {lido && <i className="fas fa-check"></i>}
+                          </div>
+                        </Link>
+                      )
+                    })
+                  ) : (
+                    <p style={{ color: 'rgba(230, 238, 248, 0.5)' }}>
+                      {filtroCapitulos === 'todos' ? 'Nenhum capítulo disponível' :
+                        filtroCapitulos === 'lidos' ? 'Nenhum capítulo lido' : 'Todos os capítulos lidos'}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

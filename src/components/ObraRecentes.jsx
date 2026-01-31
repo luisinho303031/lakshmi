@@ -47,9 +47,9 @@ export default function ObraRecentes() {
       try {
         // Fetch specific works manually
         const slugs = [
-          'por-favor-fada-me-deixe-explicar',
+          'eu-me-tornei-o-primeiro-principe-rebelde',
           'necromante-catastrofico',
-          'sentido-da-espada-absoluta',
+          'o-deus-demonio-cssmtz',
           'o-retorno-do-demonio-louco',
           'eu-obtive-um-item-mitico',
           'o-heroi-de-nivel-maximo-ira-voltar'

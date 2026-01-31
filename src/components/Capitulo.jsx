@@ -11,6 +11,7 @@ export default function Capitulo() {
     const [capitulo, setCapitulo] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [timestamp] = useState(Date.now())
 
     const CDN_ROOT = '/cdn-tenrai'
 
@@ -103,7 +104,7 @@ export default function Capitulo() {
                 {capitulo.cap_paginas?.map((page, index) => (
                     <img
                         key={index}
-                        src={`${CDN_ROOT}/${page.path}`}
+                        src={`${CDN_ROOT}/${page.path}?_t=${timestamp}`}
                         alt={`Página ${index + 1}`}
                         className="cap-image"
                         loading="lazy"

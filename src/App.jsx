@@ -15,6 +15,7 @@ import Capitulo from './components/Capitulo'
 
 import Login from './components/Login'
 import Perfil from './components/Perfil'
+import ScrollToTop from './components/ScrollToTop'
 
 function Biblioteca() {
   return (
@@ -91,15 +92,21 @@ export default function App() {
               margin: '0 auto 1rem'
             }}
           />
-          <span>Carregando Lakshmi...</span>
+
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       </div>
     )
   }
 
+  // Redirect to login if not authenticated
+  if (!user && location.pathname !== '/entrar') {
+    return <Navigate to="/entrar" replace />
+  }
+
   const isReading = location.pathname.startsWith('/cap/')
-  const hideNav = location.pathname === '/entrar' || isReading
+  const isLogin = location.pathname === '/entrar'
+  const hideNav = isLogin || isReading
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const handleLogout = async () => {
@@ -108,7 +115,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${isReading ? 'reading-mode' : ''}`}>
+    <div className={`app ${isReading ? 'reading-mode' : ''} ${isLogin ? 'login-mode' : ''}`}>
       {!hideNav && <Sidebar onLogoutClick={() => setShowLogoutModal(true)} />}
       {!hideNav && (
         <div className="mobile-topbar-wrapper">
@@ -118,6 +125,7 @@ export default function App() {
       {!hideNav && <BottomBar />}
 
       <main className="content">
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Navigate to="/inicio" replace />} />
           <Route path="/inicio" element={<Inicio />} />

@@ -345,14 +345,16 @@ export default function ObraTodas() {
 
   const handleOpenObra = () => {
     if (!selectedObra) return
-    window.location.href = `/obra/${slugify(selectedObra.obr_nome)}`
+    const slug = selectedObra.obr_slug || slugify(selectedObra.obr_nome)
+    window.location.href = `/obra/${slug}`
     setContextMenu(null)
     setShowMobileMenu(false)
   }
 
   const handleOpenObraNewTab = () => {
     if (!selectedObra) return
-    window.open(`/obra/${slugify(selectedObra.obr_nome)}`, '_blank')
+    const slug = selectedObra.obr_slug || slugify(selectedObra.obr_nome)
+    window.open(`/obra/${slug}`, '_blank')
     setContextMenu(null)
     setShowMobileMenu(false)
   }
@@ -562,8 +564,10 @@ export default function ObraTodas() {
                 imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(obraId)}/${encodeURIComponent(imgBasename)}`
               }
 
+              const slug = obr.obr_slug || slugify(obr.obr_nome)
+
               return (
-                <Link key={obr.obr_id} to={`/obra/${slugify(obr.obr_nome)}`} className="obra-card-link">
+                <Link key={obr.obr_id} to={`/obra/${slug}`} className="obra-card-link">
                   <div className="obra-card" onContextMenu={(e) => handleContextMenu(e, obr)}>
                     <div className="obra-cover-container">
                       <img
