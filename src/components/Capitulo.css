@@ -4,52 +4,150 @@
     width: 100%;
 }
 
-.cap-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    z-index: 100;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
 
-.cap-back {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 1.2rem;
-    cursor: pointer;
-    margin-right: 20px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s;
-}
-
-.cap-back:hover {
-    opacity: 0.7;
-}
-
-.cap-info h1 {
-    font-size: 1rem;
-    font-weight: 500;
-    margin: 0;
-    color: #fff;
-}
 
 .cap-viewer {
     display: flex;
     flex-direction: column;
-    padding-top: 60px;
-    /* Space for header */
+    padding-top: 0;
     width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.cap-nav-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.cap-nav-overlay button {
+    pointer-events: auto;
+}
+
+/* Top Left Navigation (Back & Home) */
+.cap-nav-top-left {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.nav-btn {
+    width: 34px;
+    height: 34px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    border-radius: 4px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Top Right Status (Battery & Progress) */
+.cap-nav-top-right {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-shadow:
+        0 0 4px rgba(0, 0, 0, 1),
+        0 0 8px rgba(0, 0, 0, 1),
+        0 1px 2px rgba(0, 0, 0, 1);
+}
+
+.status-divider {
+    width: 1px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.cap-nav-bottom {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chapter-selector-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.chapter-selector-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-arrow {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0.8;
+}
+
+.nav-arrow:hover:not(:disabled) {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.nav-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
 }
 
 .cap-image {
@@ -60,7 +158,6 @@
     padding: 0;
     border: none;
     border-radius: 0 !important;
-    /* Force no border radius */
 }
 
 .cap-loading,
@@ -68,24 +165,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 80vh;
-    color: #71717a;
+    height: 100vh;
+    color: #ffffff;
     font-size: 1rem;
+    background: #000;
 }
 
 .cap-footer {
-    padding: 80px 20px 120px;
+    padding: 100px 20px 150px;
     text-align: center;
     color: #52525b;
     font-size: 0.9rem;
 }
 
-/* Hide navigation from app when in chapter view if needed */
-/* For now, we keep the app structure */
-
-@media (min-width: 1024px) {
-    .cap-viewer {
-        max-width: 400px;
-        margin: 0 auto;
+@media (max-width: 768px) {
+    .cap-nav-bottom {
+        bottom: 20px;
+        gap: 60px;
+        width: 80%;
+        justify-content: center;
     }
+}
+
+.hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
 }
