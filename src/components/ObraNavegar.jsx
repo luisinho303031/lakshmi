@@ -27,7 +27,7 @@ export default function ObraNavegar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 520)
 
-  const CDN_ROOT = '/cdn-tenrai'
+  const CDN_ROOT = 'https://cdn.verdinha.wtf'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   // fetch obras for current page (infinite scroll)

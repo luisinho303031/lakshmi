@@ -19,8 +19,15 @@ export default function ObraDetalhe() {
   const [ultimoCapitulo, setUltimoCapitulo] = useState(null)
   const [activeTab, setActiveTab] = useState('info') // 'info' or 'capitulos'
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
 
-  const CDN_ROOT = '/cdn-tenrai'
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const CDN_ROOT = 'https://cdn.verdinha.wtf'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   useEffect(() => {
@@ -144,7 +151,66 @@ export default function ObraDetalhe() {
   }
 
   if (loading) {
-    return <div className="obra-detalhe-container"><p>Carregando...</p></div>
+    return (
+      <div className="obra-detalhe-container">
+        <div className="obra-content-wrapper">
+          {/* Mobile Skeleton Header */}
+          <div className="obra-mobile-header skeleton">
+            <div className="skeleton-box skeleton-mobile-capa"></div>
+            <div className="skeleton-mobile-info">
+              <div className="skeleton-box skeleton-mobile-title"></div>
+              <div className="skeleton-box skeleton-mobile-btn"></div>
+              <div className="skeleton-box skeleton-mobile-btn"></div>
+            </div>
+          </div>
+
+          {/* Mobile Tabs Skeleton */}
+          <div className="obra-mobile-tabs" style={{ display: isMobile ? 'flex' : 'none' }}>
+            <div className="mobile-tab active" style={{ borderBottomColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="skeleton-box" style={{ height: '14px', width: '60px', margin: '0 auto' }}></div>
+            </div>
+            <div className="mobile-tab">
+              <div className="skeleton-box" style={{ height: '14px', width: '60px', margin: '0 auto' }}></div>
+            </div>
+          </div>
+
+          <div className="mobile-tab-content" style={{ display: isMobile ? 'block' : 'none', padding: '0 20px' }}>
+            <div className="skeleton-box skeleton-tags" style={{ width: '150px' }}></div>
+            <div className="skeleton-box skeleton-desc"></div>
+            <div className="skeleton-box skeleton-desc"></div>
+            <div className="skeleton-box skeleton-desc short"></div>
+          </div>
+
+          {/* Desktop Skeleton Title */}
+          {!isMobile && <div className="skeleton-box skeleton-title-main"></div>}
+
+          <div className="obra-main-grid" style={{ display: isMobile ? 'none' : 'grid' }}>
+            {/* Left Column Skeleton */}
+            <div className="obra-left-column">
+              <div className="skeleton-box skeleton-capa"></div>
+              <div className="skeleton-box skeleton-btn"></div>
+              <div className="skeleton-box skeleton-btn"></div>
+              <div className="skeleton-box skeleton-meta"></div>
+              <div className="skeleton-box skeleton-meta"></div>
+            </div>
+
+            {/* Right Column Skeleton */}
+            <div className="obra-right-column">
+              <div className="skeleton-box skeleton-tags"></div>
+              <div className="skeleton-box skeleton-desc"></div>
+              <div className="skeleton-box skeleton-desc"></div>
+              <div className="skeleton-box skeleton-desc short"></div>
+              <div style={{ marginTop: '30px' }}>
+                <div className="skeleton-box skeleton-chapter"></div>
+                <div className="skeleton-box skeleton-chapter"></div>
+                <div className="skeleton-box skeleton-chapter"></div>
+                <div className="skeleton-box skeleton-chapter"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (error) {

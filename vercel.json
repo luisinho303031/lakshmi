@@ -28,10 +28,6 @@
             "destination": "https://api.verdinha.wtf/:path*"
         },
         {
-            "source": "/cdn-tenrai/:path*",
-            "destination": "https://cdn.verdinha.wtf/:path*"
-        },
-        {
             "source": "/api-verdinha/:path*",
             "destination": "https://api.verdinha.wtf/:path*"
         },

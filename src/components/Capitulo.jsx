@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabaseClient'
@@ -14,11 +14,50 @@ export default function Capitulo() {
     const [error, setError] = useState(null)
     const [timestamp] = useState(Date.now())
     const [showChaptersDrawer, setShowChaptersDrawer] = useState(false)
-    const [battery, setBattery] = useState(null)
-    const [progress, setProgress] = useState(0)
     const [showUI, setShowUI] = useState(true)
+    const [historicoLido, setHistoricoLido] = useState([])
+    const [showTutorial, setShowTutorial] = useState(false)
+    const [showDesktopDropdown, setShowDesktopDropdown] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+    const dropdownRef = useRef(null)
 
-    const CDN_ROOT = '/cdn-tenrai'
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth <= 768
+            setIsMobile(mobile)
+            if (!mobile) setShowUI(true) // Force UI visible on desktop
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    useEffect(() => {
+        const tutorialSeen = localStorage.getItem('tutorial_leitor_v1')
+        if (!tutorialSeen && window.innerWidth <= 768) {
+            setShowTutorial(true)
+        }
+    }, [])
+
+    const handleFecharTutorial = (e) => {
+        e.stopPropagation()
+        setShowTutorial(false)
+        localStorage.setItem('tutorial_leitor_v1', 'true')
+    }
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setShowDesktopDropdown(false)
+            }
+        }
+        if (showDesktopDropdown) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [showDesktopDropdown])
+
+    const CDN_ROOT = 'https://cdn.verdinha.wtf'
 
     // Registrar leitura no histórico
     const registrarLeitura = async (capituloData) => {
@@ -90,17 +129,27 @@ export default function Capitulo() {
         window.scrollTo(0, 0)
     }, [capId, user])
 
-    // Battery Logic
+    // Buscar histórico de capítulos lidos
     useEffect(() => {
-        if ('getBattery' in navigator) {
-            navigator.getBattery().then(batt => {
-                setBattery(Math.round(batt.level * 100))
-                batt.addEventListener('levelchange', () => {
-                    setBattery(Math.round(batt.level * 100))
-                })
-            })
+        const fetchHistorico = async () => {
+            if (!user) return
+            try {
+                const { data, error: hError } = await supabase
+                    .from('historico_leitura')
+                    .select('capitulo_id')
+                    .eq('usuario_id', user.id)
+
+                if (hError) throw hError
+                if (data) {
+                    setHistoricoLido(data.map(item => item.capitulo_id))
+                }
+            } catch (err) {
+                console.error('❌ Erro ao buscar histórico:', err)
+            }
         }
-    }, [])
+
+        fetchHistorico()
+    }, [user, capId]) // capId aqui garante atualizar quando um novo cap é marcado como lido
 
     // Progress Logic
     useEffect(() => {
@@ -111,22 +160,41 @@ export default function Capitulo() {
 
             // Calculate percentage based on scroll position
             const percentage = Math.round((scrolled / (fullHeight - windowHeight)) * 100)
-            setProgress(Math.max(0, Math.min(100, percentage)))
+            // setProgress(Math.max(0, Math.min(100, percentage))) // Progress state removed
         }
 
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
+
+
     if (loading) return <div className="cap-loading">Carregando capítulo...</div>
     if (error) return <div className="cap-error">Erro: {error}</div>
     if (!capitulo) return null
 
     return (
-        <div className="cap-container" onClick={() => setShowUI(!showUI)}>
+        <div className="cap-container" onClick={() => isMobile && setShowUI(!showUI)}>
+            {showTutorial && (
+                <div className="cap-tutorial-overlay" onClick={(e) => e.stopPropagation()}>
+                    <div className="cap-tutorial-card">
+                        <div className="cap-tutorial-icon">
+                            <i className="fas fa-hand-pointer"></i>
+                        </div>
+                        <h3>Dica de Leitura</h3>
+                        <p>Toque no meio da tela para ocultar ou mostrar os menus de navegação.</p>
+                        <button className="cap-tutorial-btn" onClick={handleFecharTutorial}>
+                            Entendi
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className="cap-nav-overlay">
                 {/* Top Left: Back & Home */}
-                <div className={`cap-nav-top-left ${!showUI ? 'hidden' : ''}`}>
+            </div>
+            {/* New Top Bar */}
+            <header className={`cap-top-bar ${(isMobile && !showUI) ? 'hidden' : ''}`}>
+                <div className="cap-top-left">
                     <button
                         onClick={(e) => {
                             e.stopPropagation()
@@ -136,75 +204,129 @@ export default function Capitulo() {
                                 navigate(-1)
                             }
                         }}
-                        className="nav-btn"
+                        className="cap-top-back"
                         title="Voltar para a obra"
                     >
                         <i className="fas fa-arrow-left"></i>
                     </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            navigate('/')
-                        }}
-                        className="nav-btn"
-                        title="Ir para a Home"
-                    >
-                        <i className="fas fa-home"></i>
-                    </button>
-                </div>
-
-                {/* Top Right: Status Info - ALWAYS VISIBLE */}
-                <div className="cap-nav-top-right">
-                    <div className="status-indicator">
-                        <div className="status-item">
-                            <i className={`fas fa-battery-${battery < 20 ? 'quarter' : battery < 50 ? 'half' : battery < 80 ? 'three-quarters' : 'full'}`}></i>
-                            <span>{battery !== null ? `${battery}%` : '--'}</span>
-                        </div>
-                        <div className="status-divider"></div>
-                        <div className="status-item">
-                            <i className="fas fa-percent" style={{ fontSize: '0.7rem', opacity: 0.6 }}></i>
-                            <span>{progress}%</span>
-                        </div>
+                    <div className="cap-top-info">
+                        <span className="cap-top-work-title">{capitulo.obra?.obr_nome || 'Obra'}</span>
                     </div>
                 </div>
 
-                {/* Bottom Center: Prev & Next */}
-                <div className={`cap-nav-bottom ${!showUI ? 'hidden' : ''}`}>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            navigate(`/cap/${capitulo.capitulo_anterior?.cap_id}`)
-                        }}
-                        disabled={!capitulo.capitulo_anterior?.cap_id}
-                        className="nav-arrow"
-                        title="Capítulo anterior"
-                    >
-                        <i className="fas fa-arrow-left"></i>
-                    </button>
-                    <button
-                        className="chapter-selector-btn"
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            setShowChaptersDrawer(true)
-                        }}
-                    >
-                        <span>Cap. {capitulo.cap_numero}</span>
-                        <i className="fas fa-chevron-down" style={{ fontSize: '0.7rem', opacity: 0.7 }}></i>
-                    </button>
+                {!isMobile && (
+                    <div className="cap-top-right">
+                        <div className="cap-desktop-nav">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (capitulo.capitulo_anterior?.cap_id) {
+                                        navigate(`/cap/${capitulo.capitulo_anterior.cap_id}`)
+                                    }
+                                }}
+                                disabled={!capitulo.capitulo_anterior?.cap_id}
+                                className="cap-nav-btn"
+                                title="Capítulo anterior"
+                            >
+                                <i className="fas fa-arrow-left"></i>
+                            </button>
 
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            navigate(`/cap/${capitulo.capitulo_proximo?.cap_id}`)
-                        }}
-                        disabled={!capitulo.capitulo_proximo?.cap_id}
-                        className="nav-arrow"
-                        title="Próximo capítulo"
-                    >
-                        <i className="fas fa-arrow-right"></i>
-                    </button>
+                            <div className="cap-desktop-selector"
+                                ref={dropdownRef}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setShowDesktopDropdown(!showDesktopDropdown)
+                                }}
+                            >
+                                <span>Capítulo {capitulo.cap_numero}</span>
+                                <i className="fas fa-chevron-down"></i>
+
+                                {showDesktopDropdown && (
+                                    <div className="cap-desktop-dropdown">
+                                        {[...(capitulo.obra?.capitulos || [])]
+                                            .sort((a, b) => b.cap_numero - a.cap_numero)
+                                            .map((cap) => (
+                                                <div
+                                                    key={cap.cap_id}
+                                                    className={`dropdown-item ${cap.cap_id === capitulo.cap_id ? 'active' : ''}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(`/cap/${cap.cap_id}`)
+                                                        setShowDesktopDropdown(false)
+                                                    }}
+                                                >
+                                                    <span>Capítulo {cap.cap_numero}</span>
+                                                    {historicoLido.includes(cap.cap_id) && <i className="fas fa-check" style={{ color: '#f0f0f0' }}></i>}
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (capitulo.capitulo_proximo?.cap_id) {
+                                        navigate(`/cap/${capitulo.capitulo_proximo.cap_id}`)
+                                    }
+                                }}
+                                disabled={!capitulo.capitulo_proximo?.cap_id}
+                                className="cap-nav-btn"
+                                title="Próximo capítulo"
+                            >
+                                <i className="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </header>
+
+            {/* New Bottom Bar */}
+            <nav className={`cap-bottom-bar ${(isMobile && !showUI) ? 'hidden' : ''}`}>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        if (capitulo.capitulo_anterior?.cap_id) {
+                            navigate(`/cap/${capitulo.capitulo_anterior.cap_id}`)
+                        }
+                    }}
+                    disabled={!capitulo.capitulo_anterior?.cap_id}
+                    className="cap-bottom-item"
+                    title="Capítulo anterior"
+                >
+                    <i className="fas fa-arrow-left"></i>
+                </button>
+
+                <div
+                    className="cap-bottom-info"
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setShowChaptersDrawer(true)
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                        <span className="cap-bottom-title">Capítulo {capitulo.cap_numero}</span>
+                        <i className="fas fa-chevron-down" style={{ fontSize: '0.7rem', color: '#71717a' }}></i>
+                    </div>
+                    {capitulo.cap_nome && capitulo.cap_nome !== `Capítulo ${capitulo.cap_numero}` && (
+                        <span className="cap-bottom-subtitle">{capitulo.cap_nome}</span>
+                    )}
                 </div>
-            </div>
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        if (capitulo.capitulo_proximo?.cap_id) {
+                            navigate(`/cap/${capitulo.capitulo_proximo.cap_id}`)
+                        }
+                    }}
+                    disabled={!capitulo.capitulo_proximo?.cap_id}
+                    className="cap-bottom-item"
+                    title="Próximo capítulo"
+                >
+                    <i className="fas fa-arrow-right"></i>
+                </button>
+            </nav>
 
             {/* Chapters Drawer */}
             <Drawer.Root open={showChaptersDrawer} onOpenChange={setShowChaptersDrawer}>
@@ -247,13 +369,18 @@ export default function Capitulo() {
                                                 }}
                                             >
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                    <span style={{
-                                                        fontSize: '1rem',
-                                                        fontWeight: cap.cap_id === capitulo.cap_id ? '700' : '500',
-                                                        color: cap.cap_id === capitulo.cap_id ? '#fff' : '#e4e4e7'
-                                                    }}>
-                                                        Capítulo {cap.cap_numero}
-                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{
+                                                            fontSize: '1rem',
+                                                            fontWeight: cap.cap_id === capitulo.cap_id ? '700' : '500',
+                                                            color: cap.cap_id === capitulo.cap_id ? '#fff' : '#e4e4e7'
+                                                        }}>
+                                                            Capítulo {cap.cap_numero}
+                                                        </span>
+                                                        {historicoLido.includes(cap.cap_id) && (
+                                                            <i className="fas fa-eye" style={{ fontSize: '0.75rem', color: '#71717a' }}></i>
+                                                        )}
+                                                    </div>
                                                     {cap.cap_nome && cap.cap_nome !== `Capítulo ${cap.cap_numero}` && (
                                                         <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: '400' }}>
                                                             {cap.cap_nome}

@@ -51,7 +51,7 @@ export default function ObraTodas() {
   const statusDropdownRef = useRef(null)
   const searchInputRef = useRef(null)
 
-  const CDN_ROOT = '/cdn-tenrai'
+  const CDN_ROOT = 'https://cdn.verdinha.wtf'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   // Fetch filters (tags and status)

@@ -10,11 +10,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api-tenrai/, '')
       },
-      '/cdn-tenrai': {
-        target: 'https://cdn.verdinha.wtf',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/cdn-tenrai/, '')
-      }
+
     }
   },
   build: {

@@ -20,7 +20,7 @@ export default function ObraRecentes() {
   const contextMenuRef = useRef(null)
   const toastTimeoutRef = useRef(null)
 
-  const CDN_ROOT = '/cdn-tenrai'
+  const CDN_ROOT = 'https://cdn.verdinha.wtf'
   const IMG_BASE = `${CDN_ROOT}/scans`
 
   // Detectar mudança de tamanho de tela

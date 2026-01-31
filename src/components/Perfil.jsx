@@ -21,7 +21,7 @@ export default function Perfil() {
     const [uploading, setUploading] = useState(false)
     const menuRef = useRef(null)
 
-    const CDN_ROOT = '/cdn-tenrai'
+    const CDN_ROOT = 'https://cdn.verdinha.wtf'
     const IMG_BASE = `${CDN_ROOT}/scans`
 
     const slugify = (str) => {

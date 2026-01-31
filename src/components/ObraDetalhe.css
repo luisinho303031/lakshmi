@@ -202,6 +202,8 @@
   color: #d4d4d8;
   line-height: 1.7;
   margin: 0;
+  padding-top: 14px;
+  padding-bottom: 14px;
 }
 
 /* Divider */
@@ -301,6 +303,107 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+}
+
+/* Skeleton Loading Styles */
+.skeleton-box {
+  background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-title-main {
+  height: 32px;
+  width: 300px;
+  margin-bottom: 24px;
+}
+
+.skeleton-capa {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 4px;
+}
+
+.skeleton-btn {
+  height: 48px;
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 8px;
+}
+
+.skeleton-meta {
+  height: 40px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.skeleton-tags {
+  height: 20px;
+  width: 200px;
+  margin-bottom: 12px;
+}
+
+.skeleton-desc {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton-desc.short {
+  width: 60%;
+}
+
+.skeleton-chapter {
+  height: 54px;
+  width: 100%;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .skeleton-title-main {
+    display: none;
+  }
+
+  .obra-mobile-header.skeleton {
+    display: flex;
+    gap: 16px;
+    padding: 0px;
+  }
+
+  .skeleton-mobile-capa {
+    width: 140px;
+    height: 200px;
+    flex-shrink: 0;
+  }
+
+  .skeleton-mobile-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .skeleton-mobile-title {
+    height: 24px;
+    width: 80%;
+  }
+
+  .skeleton-mobile-btn {
+    height: 36px;
+    width: 100%;
+  }
 }
 
 .capitulo-item {
@@ -586,6 +689,7 @@
   .obra-descricao {
     font-size: 0.9rem;
     line-height: 1.6;
+    padding-top: 0px;
   }
 
   .capitulo-item {
