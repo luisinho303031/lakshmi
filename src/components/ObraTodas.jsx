@@ -477,7 +477,7 @@ export default function ObraTodas() {
         <Drawer.Root open={showMobileFilters} onOpenChange={setShowMobileFilters}>
           <Drawer.Trigger asChild>
             <button className="mobile-filters-btn">
-              <i className="fas fa-sliders-h" style={{ fontSize: '1.25rem' }}></i>
+              <i className="fas fa-sliders-h" style={{ fontSize: '1rem' }}></i>
               {(selectedStatus.length > 0 || selectedTags.length > 0) && (
                 <span className="tags-count-badge mobile-badge">
                   {selectedStatus.length + selectedTags.length}

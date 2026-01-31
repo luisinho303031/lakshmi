@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
+import { Drawer } from 'vaul'
 import './ObraDetalhe.css'
 
 export default function ObraDetalhe() {
@@ -17,6 +18,7 @@ export default function ObraDetalhe() {
   const [capitulosLidos, setCapitulosLidos] = useState(new Set())
   const [ultimoCapitulo, setUltimoCapitulo] = useState(null)
   const [activeTab, setActiveTab] = useState('info') // 'info' or 'capitulos'
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
 
   const CDN_ROOT = '/cdn-tenrai'
   const IMG_BASE = `${CDN_ROOT}/scans`
@@ -271,27 +273,13 @@ export default function ObraDetalhe() {
           {activeTab === 'capitulos' && (
             <div className="capitulos-content-mobile">
               <div className="obra-capitulos-section">
-                <div className="capitulos-header">
-                  <div className="capitulos-tabs">
-                    <button
-                      className={`tab-item ${filtroCapitulos === 'todos' ? 'active' : ''}`}
-                      onClick={() => setFiltroCapitulos('todos')}
-                    >
-                      Todos
-                    </button>
-                    <button
-                      className={`tab-item ${filtroCapitulos === 'lidos' ? 'active' : ''}`}
-                      onClick={() => setFiltroCapitulos('lidos')}
-                    >
-                      Lidos
-                    </button>
-                    <button
-                      className={`tab-item ${filtroCapitulos === 'nao_lidos' ? 'active' : ''}`}
-                      onClick={() => setFiltroCapitulos('nao_lidos')}
-                    >
-                      Não lidos
-                    </button>
-                  </div>
+                <div className="capitulos-header-mobile">
+                  <button
+                    className="btn-filter-mobile"
+                    onClick={() => setFilterDrawerOpen(true)}
+                  >
+                    <i className="fas fa-sliders-h" style={{ fontSize: '1rem' }}></i>
+                  </button>
                   <div className="ordem-buttons">
                     <button
                       className={`btn-ordem ${!ordenAscendente ? 'active' : ''}`}
@@ -309,6 +297,57 @@ export default function ObraDetalhe() {
                     </button>
                   </div>
                 </div>
+
+                {/* Filter Drawer */}
+                <Drawer.Root open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
+                  <Drawer.Portal>
+                    <Drawer.Overlay className="vaul-overlay" />
+                    <Drawer.Content className="vaul-content">
+                      <div className="vaul-handle-wrapper">
+                        <div className="vaul-handle" />
+                      </div>
+                      <div className="vaul-inner-content">
+                        <div className="vaul-header">
+                          <Drawer.Title className="vaul-title">Filtros</Drawer.Title>
+                        </div>
+                        <div className="vaul-body">
+                          <div className="filter-section">
+                            <h4>Status de Leitura</h4>
+                            <div className="chips-container">
+                              <div
+                                className={`chip ${filtroCapitulos === 'todos' ? 'active' : ''}`}
+                                onClick={() => {
+                                  setFiltroCapitulos('todos')
+                                  setFilterDrawerOpen(false)
+                                }}
+                              >
+                                Todos
+                              </div>
+                              <div
+                                className={`chip ${filtroCapitulos === 'lidos' ? 'active' : ''}`}
+                                onClick={() => {
+                                  setFiltroCapitulos('lidos')
+                                  setFilterDrawerOpen(false)
+                                }}
+                              >
+                                Lidos
+                              </div>
+                              <div
+                                className={`chip ${filtroCapitulos === 'nao_lidos' ? 'active' : ''}`}
+                                onClick={() => {
+                                  setFiltroCapitulos('nao_lidos')
+                                  setFilterDrawerOpen(false)
+                                }}
+                              >
+                                Não Lidos
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Drawer.Content>
+                  </Drawer.Portal>
+                </Drawer.Root>
                 <div className="obra-capitulos">
                   {processedChapters.length > 0 ? (
                     processedChapters.map((cap) => {

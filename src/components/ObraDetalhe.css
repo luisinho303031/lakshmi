@@ -407,7 +407,7 @@
   }
 
   .obra-capa-container-mobile {
-    width: 120px;
+    width: 140px;
     flex-shrink: 0;
   }
 
@@ -429,7 +429,7 @@
 
   .obra-titulo-mobile {
     font-size: 1.2rem;
-    font-weight: 800;
+    font-weight: 400;
     margin: 0;
     color: #ffffff;
     line-height: 1.2;
@@ -446,9 +446,8 @@
 
   .btn-iniciar-mobile {
     background: transparent;
-    color: #ffffff;
+    color: #a1a1aa;
     border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0;
     padding: 12px 0;
     font-size: 0.9rem;
@@ -459,17 +458,12 @@
     gap: 12px;
     cursor: pointer;
     transition: all 0.2s;
-  }
-
-  .btn-iniciar-mobile:hover {
-    border-bottom-color: #ffffff;
   }
 
   .btn-biblioteca-mobile {
     background: transparent;
     color: #a1a1aa;
     border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0;
     padding: 12px 0;
     font-size: 0.9rem;
@@ -482,14 +476,6 @@
     transition: all 0.2s;
   }
 
-  .btn-biblioteca-mobile:hover {
-    color: #ffffff;
-    border-bottom-color: #ffffff;
-  }
-
-  .btn-biblioteca-mobile.active {
-    color: #ffffff;
-  }
 
   /* Mobile Tabs */
   .obra-mobile-tabs {
@@ -517,6 +503,32 @@
     border-bottom-color: #ffffff;
   }
 
+  /* Mobile Chapter Header with Filter Button */
+  .capitulos-header-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .btn-filter-mobile {
+    background: transparent;
+    color: #a1a1aa;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-filter-mobile:hover {
+    color: #ffffff;
+  }
+
+
+
   /* Mobile Tab Content */
   .mobile-tab-content {
     display: block !important;
@@ -530,7 +542,11 @@
   /* Ensure genres and description are visible */
   .mobile-tab-content .obra-generos,
   .mobile-tab-content .obra-descricao {
-    display: flex !important;
+    display: flex;
+  }
+
+  .mobile-tab-content .obra-generos {
+    display: none;
   }
 
   .mobile-tab-content .obra-descricao {
@@ -568,14 +584,14 @@
   }
 
   .obra-descricao {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     line-height: 1.6;
   }
 
   .capitulo-item {
     grid-template-columns: 1fr auto !important;
     gap: 12px !important;
-    padding: 14px 0 !important;
+    padding: 8px 0 !important;
   }
 
   .cap-info {
