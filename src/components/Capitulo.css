@@ -186,6 +186,13 @@
     transition: all 0.2s;
 }
 
+@media (max-width: 768px) {
+    .cap-top-back {
+        margin-left: 10px;
+    }
+}
+
+
 .cap-top-back:hover {
     color: #fff;
 }

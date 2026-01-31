@@ -371,14 +371,14 @@ export default function Capitulo() {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <span style={{
-                                                            fontSize: '1rem',
-                                                            fontWeight: cap.cap_id === capitulo.cap_id ? '700' : '500',
+                                                            fontSize: '0.9rem',
+                                                            fontWeight: '400',
                                                             color: cap.cap_id === capitulo.cap_id ? '#fff' : '#e4e4e7'
                                                         }}>
                                                             Capítulo {cap.cap_numero}
                                                         </span>
                                                         {historicoLido.includes(cap.cap_id) && (
-                                                            <i className="fas fa-eye" style={{ fontSize: '0.75rem', color: '#71717a' }}></i>
+                                                            <i className="fas fa-check" style={{ fontSize: '0.75rem', color: '#71717a' }}></i>
                                                         )}
                                                     </div>
                                                     {cap.cap_nome && cap.cap_nome !== `Capítulo ${cap.cap_numero}` && (
