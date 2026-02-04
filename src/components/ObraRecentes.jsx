@@ -41,7 +41,7 @@ export default function ObraRecentes({ onLoading }) {
           setLoading(false)
         }
 
-        const res = await fetch('https://api.verdinha.wtf/obras/recentes?pagina=1&limite=6&gen_id=1', {
+        const res = await fetch('/api-tenrai/obras/recentes?pagina=1&limite=6&gen_id=1', {
           headers: {
             Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
             Accept: 'application/json'
