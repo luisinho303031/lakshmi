@@ -313,8 +313,7 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: #000;
-    padding: 6px;
+    /* border/background removed */
 }
 
 .profile-card-avatar img {
@@ -338,14 +337,7 @@
 }
 
 .status-indicator {
-    position: absolute;
-    bottom: 6px;
-    right: 6px;
-    width: 22px;
-    height: 22px;
-    background: #23a55a;
-    border: 4px solid #1e1f22;
-    border-radius: 50%;
+    display: none;
 }
 
 .profile-card-user {
@@ -375,21 +367,27 @@
 }
 
 .edit-profile-btn {
-    background: #5865f2;
-    color: #fff;
+    background: transparent;
+    color: #b5bac1;
     border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
+    border-bottom: 1px solid #b5bac1;
+    border-radius: 0;
+    padding: 2px 0;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     text-decoration: none;
-    transition: background 0.1s;
+    transition: all 0.2s;
     margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .edit-profile-btn:hover {
-    background: #4752c4;
+    background: transparent;
+    color: #fff;
+    border-bottom-color: #fff;
 }
 
 /* Info Box */
@@ -632,6 +630,104 @@
     to {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+/* Editable Banner Overlay */
+.profile-banner {
+    position: relative;
+}
+
+.modal-edit-banner-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    color: #fff;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.profile-banner:hover .modal-edit-banner-btn,
+.modal-edit-banner-btn:hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-edit-banner-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Editable Avatar Overlay */
+.profile-card-avatar-wrapper {
+    position: relative;
+    /* ensure overlay is positioned relative to this */
+}
+
+.modal-edit-avatar-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.profile-card-avatar-wrapper:hover .modal-edit-avatar-btn,
+.modal-edit-avatar-btn:hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-edit-avatar-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* Loading States */
+.profile-banner.loading::after,
+.profile-card-avatar-wrapper.loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    animation: shimmer 1.5s infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
     }
 }
 

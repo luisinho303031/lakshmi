@@ -275,7 +275,7 @@ export default function ObraDetalhe() {
   }
 
   return (
-    <div className="section-box">
+    <div className="section-box obra-detail-box">
       <div className="recent-header">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div className="recent-heading">{obra.obr_nome}</div>

@@ -11,6 +11,8 @@ export default function UserModal({ user, avatarUrl, onClose, onLogout }) {
     const [histLoading, setHistLoading] = useState(false)
     const [profileData, setProfileData] = useState({ avatar_url: null, banner_url: null })
 
+    const [uploading, setUploading] = useState(false)
+
     React.useEffect(() => {
         const fetchProfile = async () => {
             if (!user) return
@@ -89,7 +91,7 @@ export default function UserModal({ user, avatarUrl, onClose, onLogout }) {
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/[^\w\s-]/g, '')
             .replace(/\s+/g, '-')
-            .replace(/-+/g, '-');
+            .replace(/-+/g, '-')
     }
 
     const handleTabChange = (tabId) => {
@@ -98,6 +100,82 @@ export default function UserModal({ user, avatarUrl, onClose, onLogout }) {
             fetchLibrary()
         } else if (tabId === 'historico') {
             fetchHistory()
+        }
+    }
+
+    const handleAvatarUpload = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file || !user) return
+
+        setUploading(true)
+        try {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${user.id}/avatar.${fileExt}`
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(fileName, file, { upsert: true })
+
+            if (uploadError) throw uploadError
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(fileName)
+
+            const { error: dbError } = await supabase
+                .from('user_profiles')
+                .upsert({
+                    user_id: user.id,
+                    avatar_url: publicUrl,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' })
+
+            if (dbError) throw dbError
+
+            setProfileData(prev => ({ ...prev, avatar_url: publicUrl }))
+        } catch (err) {
+            console.error('Erro ao fazer upload do avatar:', err)
+            alert('Erro ao fazer upload da imagem')
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    const handleBannerUpload = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file || !user) return
+
+        setUploading(true)
+        try {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${user.id}/banner.${fileExt}`
+
+            const { error: uploadError } = await supabase.storage
+                .from('banners')
+                .upload(fileName, file, { upsert: true })
+
+            if (uploadError) throw uploadError
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('banners')
+                .getPublicUrl(fileName)
+
+            const { error: dbError } = await supabase
+                .from('user_profiles')
+                .upsert({
+                    user_id: user.id,
+                    banner_url: publicUrl,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' })
+
+            if (dbError) throw dbError
+
+            setProfileData(prev => ({ ...prev, banner_url: publicUrl }))
+        } catch (err) {
+            console.error('Erro ao fazer upload do banner:', err)
+            alert('Erro ao fazer upload da imagem')
+        } finally {
+            setUploading(false)
         }
     }
 
@@ -160,19 +238,38 @@ export default function UserModal({ user, avatarUrl, onClose, onLogout }) {
                         {activeTab === 'minha-conta' ? (
                             <>
                                 <div className="profile-card">
-                                    <div className="profile-banner">
+                                    <div className={`profile-banner ${uploading ? 'loading' : ''}`}>
                                         {profileData.banner_url ? (
                                             <img src={profileData.banner_url} alt="Banner" />
                                         ) : (
                                             <div className="default-banner"></div>
                                         )}
+                                        <label className="modal-edit-banner-btn">
+                                            <i className="fas fa-camera"></i>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleBannerUpload}
+                                                disabled={uploading}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </label>
                                     </div>
                                     <div className="profile-card-header">
-                                        <div className="profile-card-avatar-wrapper">
+                                        <div className={`profile-card-avatar-wrapper ${uploading ? 'loading' : ''}`}>
                                             <div className="profile-card-avatar">
                                                 {avatarUrl ? <img src={avatarUrl} alt="Avatar" /> : <div className="avatar-placeholder-large">{user.email?.[0].toUpperCase()}</div>}
                                             </div>
-                                            <div className="status-indicator"></div>
+                                            <label className="modal-edit-avatar-btn">
+                                                <i className="fas fa-camera"></i>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleAvatarUpload}
+                                                    disabled={uploading}
+                                                    style={{ display: 'none' }}
+                                                />
+                                            </label>
                                         </div>
                                         <div className="profile-card-user">
                                             <div className="user-name-wrapper">
@@ -184,7 +281,6 @@ export default function UserModal({ user, avatarUrl, onClose, onLogout }) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Link to="/perfil" className="edit-profile-btn" onClick={onClose}>Editar perfil de usuário</Link>
                                     </div>
 
                                     <div className="profile-info-box">

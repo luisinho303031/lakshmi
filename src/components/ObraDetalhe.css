@@ -1,3 +1,8 @@
+/* Allow sticky positioning by overriding overflow: hidden from section-box */
+.section-box.obra-detail-box {
+  overflow: visible;
+}
+
 .obra-detalhe-container {
   max-width: 1000px;
   width: 100%;
@@ -44,7 +49,10 @@
   gap: 16px;
   align-self: flex-start;
   position: sticky;
-  top: 84px;
+  top: 80px;
+  /* Adjusted to sit nicely below any fixed header if present */
+  height: fit-content;
+  /* Ensure sticky works by not taking full height if container does */
 }
 
 .obra-capa-container {
