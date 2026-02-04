@@ -28,6 +28,38 @@
   justify-content: center;
 }
 
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.logo-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #000;
+  background: #fff;
+  border-radius: 999px;
+  padding: 3px 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Visual alignment fix for Space Grotesk */
+  transform: translateY(0);
+}
+
 .logo-img {
   width: 40px;
   height: auto;
@@ -55,11 +87,11 @@
   transition: all 0.2s;
   font-weight: 400;
   font-size: 0.9rem;
-  border-bottom: 2px solid transparent;
+  border-bottom: 1px solid transparent;
 }
 
 .topbar-item:hover {
-  border-bottom-color: rgba(231, 233, 234, 0.3);
+  border-bottom-color: rgba(231, 233, 234, 0.15);
 }
 
 .topbar-item.active {

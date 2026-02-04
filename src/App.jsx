@@ -16,6 +16,7 @@ import Capitulo from './components/Capitulo'
 import Login from './components/Login'
 import Perfil from './components/Perfil'
 import ScrollToTop from './components/ScrollToTop'
+import HomeBanner from './components/HomeBanner'
 
 function Biblioteca() {
   return (
@@ -27,10 +28,13 @@ function Biblioteca() {
 }
 
 function Inicio() {
+  const [loading, setLoading] = useState(true)
+
   return (
     <div className="page-inner">
+      <HomeBanner />
       <div className="recent-wrap">
-        <ObraRecentes />
+        <ObraRecentes onLoading={setLoading} />
         <ObraNavegar />
       </div>
     </div>
@@ -115,56 +119,61 @@ export default function App() {
   }
 
   return (
-    <div className={`app ${isReading ? 'reading-mode' : ''} ${isLogin ? 'login-mode' : ''}`}>
-      {!hideNav && <Sidebar onLogoutClick={() => setShowLogoutModal(true)} />}
-      {!hideNav && (
-        <div className="mobile-topbar-wrapper">
-          <TopBar onLogoutClick={() => setShowLogoutModal(true)} />
-        </div>
-      )}
-      {!hideNav && <BottomBar />}
+    <>
+      <div className="login-background global-bg">
+        <span className="bg-kanji">天雷</span>
+      </div>
+      <div className={`app ${isReading ? 'reading-mode' : ''} ${isLogin ? 'login-mode' : ''}`}>
+        {!hideNav && <Sidebar onLogoutClick={() => setShowLogoutModal(true)} />}
+        {!hideNav && (
+          <div className="mobile-topbar-wrapper">
+            <TopBar onLogoutClick={() => setShowLogoutModal(true)} />
+          </div>
+        )}
+        {!hideNav && <BottomBar />}
 
-      <main className="content">
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Navigate to="/inicio" replace />} />
-          <Route path="/inicio" element={<Inicio />} />
-          <Route path="/biblioteca" element={<Biblioteca />} />
-          <Route path="/historico" element={<Historico />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/todas" element={<Todas />} />
-          <Route path="/obra/:obraNome" element={<ObraDetalhe />} />
-          <Route path="/cap/:capId" element={<Capitulo />} />
-          <Route
-            path="/perfil"
-            element={user ? <Perfil /> : <Navigate to="/entrar" replace />}
-          />
-          <Route path="/entrar" element={<Login />} />
-        </Routes>
-      </main>
+        <main className="content">
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Navigate to="/inicio" replace />} />
+            <Route path="/inicio" element={<Inicio />} />
+            <Route path="/biblioteca" element={<Biblioteca />} />
+            <Route path="/historico" element={<Historico />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/todas" element={<Todas />} />
+            <Route path="/obra/:obraNome" element={<ObraDetalhe />} />
+            <Route path="/cap/:capId" element={<Capitulo />} />
+            <Route
+              path="/perfil"
+              element={user ? <Perfil /> : <Navigate to="/entrar" replace />}
+            />
+            <Route path="/entrar" element={<Login />} />
+          </Routes>
+        </main>
 
-      {showLogoutModal && (
-        <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">Poxa!</h3>
-            <p className="modal-text">Tem certeza que deseja sair?</p>
-            <div className="modal-buttons">
-              <button
-                className="modal-btn modal-btn-cancel"
-                onClick={() => setShowLogoutModal(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="modal-btn modal-btn-confirm"
-                onClick={handleLogout}
-              >
-                Sair
-              </button>
+        {showLogoutModal && (
+          <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h3 className="modal-title">Poxa!</h3>
+              <p className="modal-text">Tem certeza que deseja sair?</p>
+              <div className="modal-buttons">
+                <button
+                  className="modal-btn modal-btn-cancel"
+                  onClick={() => setShowLogoutModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="modal-btn modal-btn-confirm"
+                  onClick={handleLogout}
+                >
+                  Sair
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }

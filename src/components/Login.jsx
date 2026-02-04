@@ -6,45 +6,7 @@ import './Login.css'
 export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [backgroundObras, setBackgroundObras] = useState([])
   const navigate = useNavigate()
-
-  const CDN_ROOT = 'https://cdn.verdinha.wtf'
-  const IMG_BASE = `${CDN_ROOT}/scans`
-
-  useEffect(() => {
-    const fetchBackgroundObras = async () => {
-      try {
-        const res = await fetch('/api-tenrai/obras/atualizacoes?pagina=1&limite=20&gen_id=1', {
-          headers: {
-            Authorization: 'Bearer 093259483aecaf3e4eb19f29bb97a89b789fa48ccdc2f1ef22f35759f518e48a8a57c476b74f3025eca4edcfd68d01545604159e2af02d64f4b803f2fd2e3115',
-            Accept: 'application/json'
-          }
-        })
-        if (res.ok) {
-          const json = await res.json()
-          if (json.obras) {
-            const items = json.obras.map(obr => {
-              const rawName = obr.obr_imagem ? String(obr.obr_imagem) : ''
-              const imgBasename = rawName ? rawName.split('/').pop().trim() : null
-              const obraId = obr.obr_id != null ? String(obr.obr_id).trim() : ''
-              let imgUrl
-              if (rawName && rawName.includes('/')) {
-                imgUrl = `${CDN_ROOT}/${rawName.replace(/^\/+/, '')}`
-              } else if (imgBasename && obraId) {
-                imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(obraId)}/${encodeURIComponent(imgBasename)}`
-              }
-              return { id: obr.obr_id, url: imgUrl }
-            }).filter(o => o.url)
-            setBackgroundObras(items)
-          }
-        }
-      } catch (e) {
-        console.error("Failed to fetch login background", e)
-      }
-    }
-    fetchBackgroundObras()
-  }, [])
 
   const handleGoogleLogin = async () => {
     setLoading(true)
@@ -67,30 +29,12 @@ export default function Login() {
     }
   }
 
-  // Split items into 3 columns for the marquee effect
-  const col1 = backgroundObras.slice(0, Math.ceil(backgroundObras.length / 3))
-  const col2 = backgroundObras.slice(Math.ceil(backgroundObras.length / 3), Math.ceil(backgroundObras.length * 2 / 3))
-  const col3 = backgroundObras.slice(Math.ceil(backgroundObras.length * 2 / 3))
+
 
   return (
     <div className="login-container">
       <div className="login-background">
-        <div className="marquee-column">
-          <div className="marquee-content">
-            {[...col1, ...col1].map((item, i) => <img key={i} src={item.url} alt="" className="marquee-img" />)}
-          </div>
-        </div>
-        <div className="marquee-column reverse">
-          <div className="marquee-content">
-            {[...col2, ...col2].map((item, i) => <img key={i} src={item.url} alt="" className="marquee-img" />)}
-          </div>
-        </div>
-        <div className="marquee-column">
-          <div className="marquee-content">
-            {[...col3, ...col3].map((item, i) => <img key={i} src={item.url} alt="" className="marquee-img" />)}
-          </div>
-        </div>
-        <div className="login-overlay-gradient"></div>
+        <span className="bg-kanji">天雷</span>
       </div>
 
       <div className="login-card">

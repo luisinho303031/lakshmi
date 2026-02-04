@@ -1,15 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
-  /* Remove blue highlight on mobile tap */
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
+  z-index: 10;
+  background: #000;
 }
 
 /* Desktop Centering Logic */
@@ -22,18 +26,51 @@
   }
 }
 
-/* Global / Mode Dark (Premium) */
 body,
 html,
 #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #000;
-  /* Deep Zinc Black */
   color: #e4e4e7;
-  /* Zinc 200 */
   -webkit-font-smoothing: antialiased;
+}
+
+/* Global Background Kanji */
+.login-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+  background: #000;
+  /* Ensure the very base is black */
+}
+
+.bg-kanji {
+  font-size: 50rem;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.03);
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: scale(1.5);
+}
+
+@media (max-width: 768px) {
+  .bg-kanji {
+    font-size: 25rem;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
+  }
 }
 
 /* Global scrollbar styles */
@@ -70,7 +107,6 @@ html {
   padding: 0;
   background: #000;
   color: #e4e4e7;
-  overflow-x: hidden;
   width: 100%;
 }
 
@@ -137,10 +173,11 @@ html {
   flex: 1;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.search-container:hover,
 .search-container:focus-within {
   border-bottom-color: #ffffff;
 }
@@ -328,7 +365,7 @@ html {
   width: 100%;
   aspect-ratio: 2 / 3;
   position: relative;
-  border-radius: 4px;
+  border-radius: 2px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -336,7 +373,7 @@ html {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 2px;
   background: #18181b;
   display: block;
 }
@@ -584,14 +621,36 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: -10px;
+  margin-bottom: 0px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .recent-heading {
-  font-weight: 900;
+  font-weight: 800;
   color: #ffffff;
-  font-size: 1.5rem;
-  letter-spacing: -0.03em;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.section-box {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto 50px auto;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.section-body {
+  padding: 0px 20px 20px;
+}
+
+.desktop-filters {
+  display: flex;
+  gap: 24px;
+  align-items: center;
 }
 
 .ver-todas-link {
@@ -646,6 +705,17 @@ h1 {
   margin: 12px auto 0;
   width: 60%;
   border-radius: 4px;
+  background: linear-gradient(90deg, #18181b 0%, #27272a 50%, #18181b 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+.skeleton-banner {
+  width: 100%;
+  max-width: 1000px;
+  height: 240px;
+  margin: 0 auto 70px auto;
+  border-radius: 2px;
   background: linear-gradient(90deg, #18181b 0%, #27272a 50%, #18181b 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s linear infinite;
@@ -713,7 +783,7 @@ h1 {
   width: 120px;
   aspect-ratio: 2 / 3;
   position: relative;
-  border-radius: 6px;
+  border-radius: 2px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -721,7 +791,7 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 2px;
   background: #18181b;
   display: block;
 }
@@ -848,6 +918,15 @@ h1 {
 .obra-list-item:hover {
   background: transparent;
   opacity: 0.8;
+}
+
+.obra-detalhe-container {
+  max-width: 1000px;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background-color: #000;
+  margin: 0 auto;
 }
 
 .obra-list-cover-container {

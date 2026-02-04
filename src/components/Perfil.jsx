@@ -357,7 +357,6 @@ export default function Perfil() {
                 </div>
                 <div className="perfil-info">
                     <h1 className="perfil-name">{userName}</h1>
-                    <p className="perfil-email">{user.email}</p>
                 </div>
             </div>
 

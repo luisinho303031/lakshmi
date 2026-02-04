@@ -298,27 +298,32 @@ export default function ObraNavegar() {
   // Skeleton loader
   if (loading) {
     return (
-      <>
-        <div className="recent-header" style={{ marginTop: 70 }}>
-          <div className="recent-heading">Lançamentos</div>
+      <div className="section-box">
+        <div className="recent-header">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div className="recent-heading">Lançamentos</div>
+            <span className="ranking-subtitle">Últimas obras atualizadas no site!</span>
+          </div>
         </div>
-        <div className="lancamentos-list">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={`skeleton-nav-${i}`} className="lancamento-item">
-              <div className="lancamento-cover-container">
-                <div className="lancamento-cover skeleton-cover" />
-              </div>
-              <div className="lancamento-info">
-                <div className="lancamento-title skeleton-title" style={{ width: '80%', margin: '0 0 12px 0' }} />
-                <div className="lancamento-chapters" style={{ marginTop: 'auto', gap: 12 }}>
-                  <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
-                  <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
+        <div className="section-body">
+          <div className="lancamentos-list">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={`skeleton-nav-${i}`} className="lancamento-item">
+                <div className="lancamento-cover-container">
+                  <div className="lancamento-cover skeleton-cover" />
+                </div>
+                <div className="lancamento-info">
+                  <div className="lancamento-title skeleton-title" style={{ width: '80%', margin: '0 0 12px 0' }} />
+                  <div className="lancamento-chapters" style={{ marginTop: 'auto', gap: 12 }}>
+                    <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
+                    <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </>
+      </div>
     )
   }
 
@@ -336,98 +341,103 @@ export default function ObraNavegar() {
 
   // Success state
   return (
-    <>
-      <div className="recent-header" style={{ marginTop: 70 }}>
-        <div className="recent-heading">Lançamentos</div>
+    <div className="section-box">
+      <div className="recent-header">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div className="recent-heading">Lançamentos</div>
+          <span className="ranking-subtitle">Últimas obras atualizadas no site!</span>
+        </div>
       </div>
-      <div className="lancamentos-list">
-        {obras.map((obr) => {
-          const rawName = obr.obr_imagem ? String(obr.obr_imagem) : ''
-          const imgBasename = rawName ? rawName.split('/').pop().trim() : null
-          const obraId = obr.obr_id != null ? String(obr.obr_id).trim() : ''
+      <div className="section-body">
+        <div className="lancamentos-list">
+          {obras.map((obr) => {
+            const rawName = obr.obr_imagem ? String(obr.obr_imagem) : ''
+            const imgBasename = rawName ? rawName.split('/').pop().trim() : null
+            const operaId = obr.obr_id != null ? String(obr.obr_id).trim() : ''
 
-          let imgUrl
-          if (rawName && rawName.includes('/')) {
-            imgUrl = `${CDN_ROOT}/${rawName.replace(/^\/+/, '')}`
-          } else if (imgBasename && obraId) {
-            imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(obraId)}/${encodeURIComponent(imgBasename)}`
-          }
+            let imgUrl
+            if (rawName && rawName.includes('/')) {
+              imgUrl = `${CDN_ROOT}/${rawName.replace(/^\/+/, '')}`
+            } else if (imgBasename && operaId) {
+              imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(operaId)}/${encodeURIComponent(imgBasename)}`
+            }
 
-          return (
-            <div key={obr.obr_id} className="lancamento-item-wrapper">
-              <div className="lancamento-item" onContextMenu={(e) => handleContextMenu(e, obr)}>
-                <Link to={`/obra/${slugify(obr.obr_nome)}`} className="lancamento-cover-link">
-                  <div className="lancamento-cover-container">
-                    <img
-                      src={imgUrl}
-                      alt={obr.obr_nome}
-                      className="lancamento-cover"
-                      onError={(e) => { e.currentTarget.src = ''; e.currentTarget.style.background = '#111' }}
-                    />
-                    {bibliotecaObras.includes(obr.obr_id) && (
-                      <div className="lancamento-badge-overlay">Na Biblioteca</div>
+            return (
+              <div key={obr.obr_id} className="lancamento-item-wrapper">
+                <div className="lancamento-item" onContextMenu={(e) => handleContextMenu(e, obr)}>
+                  <Link to={`/obra/${slugify(obr.obr_nome)}`} className="lancamento-cover-link">
+                    <div className="lancamento-cover-container">
+                      <img
+                        src={imgUrl}
+                        alt={obr.obr_nome}
+                        className="lancamento-cover"
+                        onError={(e) => { e.currentTarget.src = ''; e.currentTarget.style.background = '#111' }}
+                      />
+                      {bibliotecaObras.includes(obr.obr_id) && (
+                        <div className="lancamento-badge-overlay">Na Biblioteca</div>
+                      )}
+                    </div>
+                  </Link>
+                  <div className="lancamento-info">
+                    <Link to={`/obra/${slugify(obr.obr_nome)}`} className="lancamento-title-link">
+                      <div className="lancamento-title">{obr.obr_nome}</div>
+                    </Link>
+                    {obr.capitulos && obr.capitulos.length > 0 && (
+                      <div className="lancamento-chapters">
+                        {obr.capitulos.slice(0, 2).map((cap) => {
+                          const capDate = new Date(cap.cap_criado_em)
+                          const now = new Date()
+                          const diffMs = now - capDate
+                          const diffMins = Math.floor(diffMs / 60000)
+                          const diffHours = Math.floor(diffMs / 3600000)
+                          const diffDays = Math.floor(diffMs / 86400000)
+
+                          let timeText = ''
+                          if (diffMins < 1) timeText = 'agora'
+                          else if (diffMins < 60) timeText = `${diffMins}min`
+                          else if (diffHours < 24) timeText = `${diffHours}h`
+                          else if (diffDays < 30) timeText = `${diffDays}d`
+                          else timeText = capDate.toLocaleDateString('pt-BR')
+
+                          const capName = cap.cap_nome.replace('Capítulo', 'Cap.')
+
+                          return (
+                            <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="lancamento-chapter-link">
+                              <div className="lancamento-chapter">
+                                <div className="lancamento-chapter-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span style={{ color: capitulosLidos.has(cap.cap_id) ? '#a1a1aa' : '#e4e4e7' }}>{capName}</span>
+                                  {capitulosLidos.has(cap.cap_id) && <i className="fas fa-check" style={{ color: '#f0f0f0', fontSize: '0.8rem' }}></i>}
+                                </div>
+                                <div className="lancamento-chapter-date">{timeText}</div>
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
                     )}
                   </div>
-                </Link>
-                <div className="lancamento-info">
-                  <Link to={`/obra/${slugify(obr.obr_nome)}`} className="lancamento-title-link">
-                    <div className="lancamento-title">{obr.obr_nome}</div>
-                  </Link>
-                  {obr.capitulos && obr.capitulos.length > 0 && (
-                    <div className="lancamento-chapters">
-                      {obr.capitulos.slice(0, 2).map((cap) => {
-                        const capDate = new Date(cap.cap_criado_em)
-                        const now = new Date()
-                        const diffMs = now - capDate
-                        const diffMins = Math.floor(diffMs / 60000)
-                        const diffHours = Math.floor(diffMs / 3600000)
-                        const diffDays = Math.floor(diffMs / 86400000)
-
-                        let timeText = ''
-                        if (diffMins < 1) timeText = 'agora'
-                        else if (diffMins < 60) timeText = `${diffMins}min`
-                        else if (diffHours < 24) timeText = `${diffHours}h`
-                        else if (diffDays < 30) timeText = `${diffDays}d`
-                        else timeText = capDate.toLocaleDateString('pt-BR')
-
-                        const capName = cap.cap_nome.replace('Capítulo', 'Cap.')
-
-                        return (
-                          <Link key={cap.cap_id} to={`/cap/${cap.cap_id}`} className="lancamento-chapter-link">
-                            <div className="lancamento-chapter">
-                              <div className="lancamento-chapter-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ color: capitulosLidos.has(cap.cap_id) ? '#a1a1aa' : '#e4e4e7' }}>{capName}</span>
-                                {capitulosLidos.has(cap.cap_id) && <i className="fas fa-check" style={{ color: '#f0f0f0', fontSize: '0.8rem' }}></i>}
-                              </div>
-                              <div className="lancamento-chapter-date">{timeText}</div>
-                            </div>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
+                </div>
+              </div>
+            )
+          })}
+          {loadingMore && Array.from({ length: 4 }).map((_, i) => (
+            <div key={`skeleton-more-${i}`} className="lancamento-item">
+              <div className="lancamento-cover-container">
+                <div className="lancamento-cover skeleton-cover" />
+              </div>
+              <div className="lancamento-info">
+                <div className="lancamento-title skeleton-title" style={{ width: '80%', margin: '0 0 12px 0' }} />
+                <div className="lancamento-chapters" style={{ marginTop: 'auto', gap: 12 }}>
+                  <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
+                  <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
                 </div>
               </div>
             </div>
-          )
-        })}
-        {loadingMore && Array.from({ length: 4 }).map((_, i) => (
-          <div key={`skeleton-more-${i}`} className="lancamento-item">
-            <div className="lancamento-cover-container">
-              <div className="lancamento-cover skeleton-cover" />
-            </div>
-            <div className="lancamento-info">
-              <div className="lancamento-title skeleton-title" style={{ width: '80%', margin: '0 0 12px 0' }} />
-              <div className="lancamento-chapters" style={{ marginTop: 'auto', gap: 12 }}>
-                <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
-                <div className="skeleton-title" style={{ width: '50%', height: 12, margin: 0 }} />
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        {/* sentinel for infinite scroll */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
       </div>
-      {/* sentinel for infinite scroll */}
-      <div ref={sentinelRef} style={{ height: 1 }} />
 
       {contextMenu && !isMobile && (
         <div
@@ -495,6 +505,6 @@ export default function ObraNavegar() {
           {toast.message}
         </div>
       )}
-    </>
+    </div>
   )
 }

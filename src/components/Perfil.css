@@ -73,71 +73,56 @@
 /* Tabs */
 .perfil-tabs {
     max-width: 1000px;
-    margin: 0 auto 24px auto;
-    padding: 0 20px;
+    margin: 0 auto 32px auto;
+    padding: 0;
     display: flex;
-    gap: 32px;
-    border-bottom: 1px solid #27272a;
+    gap: 0;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .perfil-tab {
+    flex: 1;
     background: transparent;
     border: none;
-    font-size: 0.9rem;
-    font-weight: 400;
-    color: #a1a1aa;
-    padding: 12px 0;
-    cursor: pointer;
-    position: relative;
-    transition: color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.perfil-tab-count {
-    background: #27272a;
-    color: #fff;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 12px;
-    min-width: 20px;
-    height: 20px;
+    color: #71717a;
+    padding: 16px 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    gap: 8px;
+    margin-bottom: -1px;
+    /* Align with container border */
 }
 
-.perfil-tab.active .perfil-tab-count {
-    background: #fff;
-    color: #000;
+.perfil-tab-count {
+    color: #71717a;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .perfil-tab:hover {
-    color: #e4e4e7;
+    color: #a1a1aa;
 }
 
 .perfil-tab.active {
     color: #fff;
-    font-weight: 600;
+    border-bottom: 2px solid #fff;
 }
 
-.perfil-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: #fff;
-    border-radius: 3px 3px 0 0;
+.perfil-tab.active .perfil-tab-count {
+    color: #a1a1aa;
 }
 
 .perfil-content {
     max-width: 1000px;
     margin: 0 auto;
+    padding: 0 20px;
 }
 
 /* Edit Buttons */

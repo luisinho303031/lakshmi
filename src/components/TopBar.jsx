@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import LoginModal from './LoginModal'
+import UserModal from './UserModal'
 import './TopBar.css'
 import logo from '../logo.png'
 
@@ -11,6 +12,7 @@ export default function TopBar({ onLogoutClick }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showUserModal, setShowUserModal] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(null)
 
   useEffect(() => {
@@ -51,18 +53,9 @@ export default function TopBar({ onLogoutClick }) {
     <>
       <header className={`topbar${isScrolled ? ' scrolled' : ''}`}>
         <div className="topbar-logo">
-          <Link to="/inicio" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff', letterSpacing: '-0.05em' }}>TENRAI</span>
-            <span style={{
-              fontSize: '0.6rem',
-              fontWeight: '400',
-              color: '#000',
-              background: '#fff',
-              borderRadius: '999px',
-              padding: '2px 8px',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase'
-            }}>LEITOR</span>
+          <Link to="/inicio" className="logo-link">
+            <span className="logo-text">TENRAI</span>
+            <span className="logo-badge">LEITOR</span>
           </Link>
         </div>
         <nav className="topbar-menu">
@@ -80,7 +73,11 @@ export default function TopBar({ onLogoutClick }) {
           {!loading && (
             user ? (
               <div className="topbar-user-wrapper">
-                <Link to="/perfil" className="topbar-user-button">
+                <div
+                  className="topbar-user-button"
+                  onClick={() => setShowUserModal(true)}
+                  style={{ cursor: 'pointer' }}
+                >
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Avatar" className="user-avatar" />
                   ) : (
@@ -89,7 +86,7 @@ export default function TopBar({ onLogoutClick }) {
                     </div>
                   )}
                   <i className="fas fa-ellipsis-vertical"></i>
-                </Link>
+                </div>
               </div>
             ) : (
               <button
@@ -108,6 +105,15 @@ export default function TopBar({ onLogoutClick }) {
 
       {showLoginModal && (
         <LoginModal onClose={() => setShowLoginModal(false)} />
+      )}
+
+      {showUserModal && (
+        <UserModal
+          user={user}
+          avatarUrl={avatarUrl}
+          onClose={() => setShowUserModal(false)}
+          onLogout={onLogoutClick}
+        />
       )}
     </>
   )

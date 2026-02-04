@@ -18,6 +18,7 @@ export default function ObraTodas() {
   const [contextMenu, setContextMenu] = useState(null)
   const [selectedObra, setSelectedObra] = useState(null)
   const [bibliotecaObras, setBibliotecaObras] = useState([])
+  const [totalObras, setTotalObras] = useState(0)
   const [toast, setToast] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -149,7 +150,7 @@ export default function ObraTodas() {
 
         let url = `/api-tenrai/obras/search?pagina=${page}&limite=44&gen_id=1&todos_generos=0&orderBy=ultima_atualizacao&orderDirection=DESC`
         if (debouncedSearch) {
-          url += `&nome=${encodeURIComponent(debouncedSearch)}`
+          url += `&obr_nome=${encodeURIComponent(debouncedSearch)}`
         }
         if (selectedTags.length > 0) {
           url += `&tag_ids=${selectedTags.join(',')}`
@@ -168,6 +169,7 @@ export default function ObraTodas() {
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
         const json = await res.json()
         const items = json.obras || []
+        if (json.total) setTotalObras(json.total)
 
         if (page === 1) {
           setObras(items)
@@ -376,217 +378,177 @@ export default function ObraTodas() {
 
   // Main Render
   return (
-    <>
-      <div className="search-row">
-        <div
-          className={`search-container ${searchExpanded ? 'expanded' : ''}`}
-          onClick={() => {
-            if (isMobile) {
-              setLocalSearch(searchTerm) // Sync open
-              setShowSearchDrawer(true)
-            } else {
-              if (!searchExpanded) {
-                setSearchExpanded(true)
-                setTimeout(() => searchInputRef.current?.focus(), 100)
-              }
-            }
-          }}
-        >
-          <i className="fas fa-search search-icon"></i>
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Digite o nome da obra..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onBlur={() => {
-              // Delay checking value to allow interaction
-              setTimeout(() => {
-                if (!searchTerm && searchExpanded) {
-                  setSearchExpanded(false)
-                }
-              }, 200)
-            }}
-            className="search-input"
-            readOnly={isMobile} // Prevent keyboard on mobile trigger
-          />
-          {searchExpanded && searchTerm && (
-            <i
-              className="fas fa-times clear-search-icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSearchTerm('');
-                searchInputRef.current?.focus();
-              }}
-            ></i>
-          )}
+    <div className="section-box">
+      <div className="recent-header">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div className="recent-heading">Todas as Obras</div>
+          <span className="ranking-subtitle">{totalObras} obras no catálogo!</span>
         </div>
-
-        <div className="desktop-filters">
-          <div className="tags-dropdown-wrapper" ref={statusDropdownRef}>
-            <button className="tags-dropdown-btn" onClick={() => setShowStatusDropdown(!showStatusDropdown)}>
-              Situação
-              {selectedStatus.length > 0 && (
-                <span className="tags-count-badge">{selectedStatus.length}</span>
-              )}
-              <i className={`fas fa-chevron-${showStatusDropdown ? 'up' : 'down'}`}></i>
-            </button>
-
-            {showStatusDropdown && (
-              <div className="tags-dropdown-menu">
-                {availableStatus.map((st) => (
-                  <div
-                    key={st.stt_id}
-                    className={`tag-item ${selectedStatus.includes(st.stt_id) ? 'active' : ''}`}
-                    onClick={() => toggleStatus(st.stt_id)}
-                  >
-                    {st.stt_nome}
-                    {selectedStatus.includes(st.stt_id) && <i className="fas fa-check"></i>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="tags-dropdown-wrapper" ref={tagsDropdownRef}>
-            <button className="tags-dropdown-btn" onClick={() => setShowTagsDropdown(!showTagsDropdown)}>
-              Gêneros
-              {selectedTags.length > 0 && (
-                <span className="tags-count-badge">{selectedTags.length}</span>
-              )}
-              <i className={`fas fa-chevron-${showTagsDropdown ? 'up' : 'down'}`}></i>
-            </button>
-
-            {showTagsDropdown && (
-              <div className="tags-dropdown-menu">
-                {availableTags.map((tag) => (
-                  <div
-                    key={tag.tag_id}
-                    className={`tag-item ${selectedTags.includes(tag.tag_id) ? 'active' : ''}`}
-                    onClick={() => toggleTag(tag.tag_id)}
-                  >
-                    {tag.tag_nome}
-                    {selectedTags.includes(tag.tag_id) && <i className="fas fa-check"></i>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <Drawer.Root open={showMobileFilters} onOpenChange={setShowMobileFilters}>
-          <Drawer.Trigger asChild>
-            <button className="mobile-filters-btn">
-              <i className="fas fa-sliders-h" style={{ fontSize: '1rem' }}></i>
-              {(selectedStatus.length > 0 || selectedTags.length > 0) && (
-                <span className="tags-count-badge mobile-badge">
-                  {selectedStatus.length + selectedTags.length}
-                </span>
-              )}
-            </button>
-          </Drawer.Trigger>
-          <Drawer.Portal>
-            <Drawer.Overlay className="vaul-overlay" />
-            <Drawer.Content className="vaul-content">
-              <div className="vaul-handle-wrapper">
-                <div className="vaul-handle" />
-              </div>
-
-              <div className="vaul-inner-content">
-                <div className="vaul-header">
-                  <Drawer.Title className="vaul-title">Filtros</Drawer.Title>
-                </div>
-
-                <div className="vaul-body">
-                  <div className="filter-section">
-                    <h4>Situação</h4>
-                    <div className="chips-container">
-                      {availableStatus.map((st) => (
-                        <div
-                          key={st.stt_id}
-                          className={`chip ${selectedStatus.includes(st.stt_id) ? 'active' : ''}`}
-                          onClick={() => toggleStatus(st.stt_id)}
-                        >
-                          {st.stt_nome}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="filter-section">
-                    <h4>Gêneros</h4>
-                    <div className="chips-container">
-                      {availableTags.map((tag) => (
-                        <div
-                          key={tag.tag_id}
-                          className={`chip ${selectedTags.includes(tag.tag_id) ? 'active' : ''}`}
-                          onClick={() => toggleTag(tag.tag_id)}
-                        >
-                          {tag.tag_nome}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-
-              </div>
-            </Drawer.Content>
-          </Drawer.Portal>
-        </Drawer.Root>
       </div>
-
-      {loading ? (
-        <div className="obra-grid">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={`skeleton-load-${i}`} className="obra-card">
-              <div className="obra-cover-container">
-                <div className="obra-cover skeleton-cover" />
-              </div>
-              <div className="obra-title skeleton-title" />
-            </div>
-          ))}
-        </div>
-      ) : error ? (
-        <p style={{ color: 'salmon' }}>Erro: {error}</p>
-      ) : (
-        <>
-          <div className="obra-grid">
-            {obras.map((obr) => {
-              const rawName = obr.obr_imagem ? String(obr.obr_imagem) : ''
-              const imgBasename = rawName ? rawName.split('/').pop().trim() : null
-              const obraId = obr.obr_id != null ? String(obr.obr_id).trim() : ''
-
-              let imgUrl
-              if (rawName && rawName.includes('/')) {
-                imgUrl = `${CDN_ROOT}/${rawName.replace(/^\/+/, '')}`
-              } else if (imgBasename && obraId) {
-                imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(obraId)}/${encodeURIComponent(imgBasename)}`
+      <div className="section-body" style={{ paddingTop: '24px' }}>
+        <div className="search-row">
+          <div
+            className={`search-container ${searchExpanded ? 'expanded' : ''}`}
+            onClick={() => {
+              if (isMobile) {
+                setLocalSearch(searchTerm) // Sync open
+                setShowSearchDrawer(true)
+              } else {
+                if (!searchExpanded) {
+                  setSearchExpanded(true)
+                  setTimeout(() => searchInputRef.current?.focus(), 100)
+                }
               }
+            }}
+          >
+            <i className="fas fa-search search-icon"></i>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Digite o nome da obra..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onBlur={() => {
+                // Delay checking value to allow interaction
+                setTimeout(() => {
+                  if (!searchTerm && searchExpanded) {
+                    setSearchExpanded(false)
+                  }
+                }, 200)
+              }}
+              className="search-input"
+              readOnly={isMobile} // Prevent keyboard on mobile trigger
+            />
+            {searchExpanded && searchTerm && (
+              <i
+                className="fas fa-times clear-search-icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSearchTerm('');
+                  searchInputRef.current?.focus();
+                }}
+              ></i>
+            )}
+          </div>
 
-              const slug = obr.obr_slug || slugify(obr.obr_nome)
+          <div className="desktop-filters">
+            <div className="tags-dropdown-wrapper" ref={statusDropdownRef}>
+              <button className="tags-dropdown-btn" onClick={() => setShowStatusDropdown(!showStatusDropdown)}>
+                Situação
+                {selectedStatus.length > 0 && (
+                  <span className="tags-count-badge">{selectedStatus.length}</span>
+                )}
+                <i className={`fas fa-chevron-${showStatusDropdown ? 'up' : 'down'}`}></i>
+              </button>
 
-              return (
-                <Link key={obr.obr_id} to={`/obra/${slug}`} className="obra-card-link">
-                  <div className="obra-card" onContextMenu={(e) => handleContextMenu(e, obr)}>
-                    <div className="obra-cover-container">
-                      <img
-                        src={imgUrl}
-                        alt={obr.obr_nome}
-                        className="obra-cover"
-                        onError={(e) => { e.currentTarget.src = ''; e.currentTarget.style.background = '#111' }}
-                      />
-                      {bibliotecaObras.includes(obr.obr_id) && (
-                        <div className="obra-badge-overlay">Na Biblioteca</div>
-                      )}
+              {showStatusDropdown && (
+                <div className="tags-dropdown-menu">
+                  {availableStatus.map((st) => (
+                    <div
+                      key={st.stt_id}
+                      className={`tag-item ${selectedStatus.includes(st.stt_id) ? 'active' : ''}`}
+                      onClick={() => toggleStatus(st.stt_id)}
+                    >
+                      {st.stt_nome}
+                      {selectedStatus.includes(st.stt_id) && <i className="fas fa-check"></i>}
                     </div>
-                    <div className="obra-title">{obr.obr_nome}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="tags-dropdown-wrapper" ref={tagsDropdownRef}>
+              <button className="tags-dropdown-btn" onClick={() => setShowTagsDropdown(!showTagsDropdown)}>
+                Gêneros
+                {selectedTags.length > 0 && (
+                  <span className="tags-count-badge">{selectedTags.length}</span>
+                )}
+                <i className={`fas fa-chevron-${showTagsDropdown ? 'up' : 'down'}`}></i>
+              </button>
+
+              {showTagsDropdown && (
+                <div className="tags-dropdown-menu">
+                  {availableTags.map((tag) => (
+                    <div
+                      key={tag.tag_id}
+                      className={`tag-item ${selectedTags.includes(tag.tag_id) ? 'active' : ''}`}
+                      onClick={() => toggleTag(tag.tag_id)}
+                    >
+                      {tag.tag_nome}
+                      {selectedTags.includes(tag.tag_id) && <i className="fas fa-check"></i>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Drawer.Root open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+            <Drawer.Trigger asChild>
+              <button className="mobile-filters-btn">
+                <i className="fas fa-sliders-h" style={{ fontSize: '1rem' }}></i>
+                {(selectedStatus.length > 0 || selectedTags.length > 0) && (
+                  <span className="tags-count-badge mobile-badge">
+                    {selectedStatus.length + selectedTags.length}
+                  </span>
+                )}
+              </button>
+            </Drawer.Trigger>
+            <Drawer.Portal>
+              <Drawer.Overlay className="vaul-overlay" />
+              <Drawer.Content className="vaul-content">
+                <div className="vaul-handle-wrapper">
+                  <div className="vaul-handle" />
+                </div>
+
+                <div className="vaul-inner-content">
+                  <div className="vaul-header">
+                    <Drawer.Title className="vaul-title">Filtros</Drawer.Title>
                   </div>
-                </Link>
-              )
-            })}
-            {loadingMore && Array.from({ length: 5 }).map((_, i) => (
-              <div key={`skeleton-mais-${i}`} className="obra-card">
+
+                  <div className="vaul-body">
+                    <div className="filter-section">
+                      <h4>Situação</h4>
+                      <div className="chips-container">
+                        {availableStatus.map((st) => (
+                          <div
+                            key={st.stt_id}
+                            className={`chip ${selectedStatus.includes(st.stt_id) ? 'active' : ''}`}
+                            onClick={() => toggleStatus(st.stt_id)}
+                          >
+                            {st.stt_nome}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="filter-section">
+                      <h4>Gêneros</h4>
+                      <div className="chips-container">
+                        {availableTags.map((tag) => (
+                          <div
+                            key={tag.tag_id}
+                            className={`chip ${selectedTags.includes(tag.tag_id) ? 'active' : ''}`}
+                            onClick={() => toggleTag(tag.tag_id)}
+                          >
+                            {tag.tag_nome}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+
+                </div>
+              </Drawer.Content>
+            </Drawer.Portal>
+          </Drawer.Root>
+        </div>
+
+        {loading ? (
+          <div className="obra-grid">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={`skeleton-load-${i}`} className="obra-card">
                 <div className="obra-cover-container">
                   <div className="obra-cover skeleton-cover" />
                 </div>
@@ -594,142 +556,190 @@ export default function ObraTodas() {
               </div>
             ))}
           </div>
-          {/* sentinel for infinite scroll */}
-          <div ref={sentinelRef} style={{ height: 1 }} />
-        </>
-      )}
+        ) : error ? (
+          <p style={{ color: 'salmon' }}>Erro: {error}</p>
+        ) : (
+          <>
+            <div className="obra-grid">
+              {obras.map((obr) => {
+                const rawName = obr.obr_imagem ? String(obr.obr_imagem) : ''
+                const imgBasename = rawName ? rawName.split('/').pop().trim() : null
+                const obraId = obr.obr_id != null ? String(obr.obr_id).trim() : ''
 
-      {contextMenu && !isMobile && (
-        <div
-          ref={contextMenuRef}
-          className="context-menu"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          {bibliotecaObras.includes(selectedObra.obr_id) ? (
-            <button className="context-menu-item" onClick={handleRemoveFromLibrary}>
-              <i className="fas fa-trash"></i> Remover da biblioteca
-            </button>
-          ) : (
-            <button className="context-menu-item" onClick={handleAddToLibrary}>
-              <i className="fas fa-plus"></i> Adicionar à biblioteca
-            </button>
-          )}
-          <button className="context-menu-item" onClick={handleOpenObra}>
-            <i className="fas fa-arrow-right"></i> Abrir obra
-          </button>
-          <button className="context-menu-item" onClick={handleOpenObraNewTab}>
-            <i className="fas fa-external-link"></i> Abrir em outra aba
-          </button>
-        </div>
-      )}
+                let imgUrl
+                if (rawName && rawName.includes('/')) {
+                  imgUrl = `${CDN_ROOT}/${rawName.replace(/^\/+/, '')}`
+                } else if (imgBasename && obraId) {
+                  imgUrl = `${IMG_BASE}/1/obras/${encodeURIComponent(obraId)}/${encodeURIComponent(imgBasename)}`
+                }
 
-      {/* NEW Search Drawer */}
-      <Drawer.Root open={showSearchDrawer} onOpenChange={setShowSearchDrawer}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="vaul-overlay" />
-          <Drawer.Content className="vaul-content">
-            <div className="vaul-handle-wrapper">
-              <div className="vaul-handle" />
-            </div>
-            <div className="vaul-inner-content">
-              <div className="vaul-header">
-                <Drawer.Title className="vaul-title">Pesquisar</Drawer.Title>
-              </div>
-              <div className="vaul-body">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <input
-                    type="text"
-                    placeholder="Digite o nome da obra..."
-                    value={localSearch}
-                    onChange={(e) => setLocalSearch(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 0',
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid rgba(255,255,255,0.3)',
-                      color: '#fff',
-                      fontSize: '0.9rem',
-                      fontWeight: '400 !important',
-                      outline: 'none',
-                      borderRadius: 0
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSearchSubmit()
-                    }}
-                    onFocus={(e) => e.target.style.borderBottomColor = '#fff'}
-                    onBlur={(e) => e.target.style.borderBottomColor = 'rgba(255,255,255,0.3)'}
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleSearchSubmit}
-                    disabled={localSearch.trim().length < 3}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      background: '#fff',
-                      color: '#000',
-                      border: 'none',
-                      borderRadius: '999px',
-                      fontSize: '0.9rem',
-                      fontWeight: '400',
-                      cursor: localSearch.trim().length < 3 ? 'not-allowed' : 'pointer',
-                      opacity: localSearch.trim().length < 3 ? 0.5 : 1,
-                      transition: 'opacity 0.2s'
-                    }}
-                  >
-                    Pesquisar
-                  </button>
+                const slug = obr.obr_slug || slugify(obr.obr_nome)
+
+                return (
+                  <Link key={obr.obr_id} to={`/obra/${slug}`} className="obra-card-link">
+                    <div className="obra-card" onContextMenu={(e) => handleContextMenu(e, obr)}>
+                      <div className="obra-cover-container">
+                        <img
+                          src={imgUrl}
+                          alt={obr.obr_nome}
+                          className="obra-cover"
+                          onError={(e) => { e.currentTarget.src = ''; e.currentTarget.style.background = '#111' }}
+                        />
+                        {bibliotecaObras.includes(obr.obr_id) && (
+                          <div className="obra-badge-overlay">Na Biblioteca</div>
+                        )}
+                      </div>
+                      <div className="obra-title">{obr.obr_nome}</div>
+                    </div>
+                  </Link>
+                )
+              })}
+              {loadingMore && Array.from({ length: 5 }).map((_, i) => (
+                <div key={`skeleton-mais-${i}`} className="obra-card">
+                  <div className="obra-cover-container">
+                    <div className="obra-cover skeleton-cover" />
+                  </div>
+                  <div className="obra-title skeleton-title" />
                 </div>
-              </div>
+              ))}
             </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+            {/* sentinel for infinite scroll */}
+            <div ref={sentinelRef} style={{ height: 1 }} />
+          </>
+        )}
 
-      {/* NEW Context Menu Drawer */}
-      <Drawer.Root open={showMobileMenu} onOpenChange={setShowMobileMenu}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="vaul-overlay" />
-          <Drawer.Content className="vaul-content">
-            <div className="vaul-handle-wrapper">
-              <div className="vaul-handle" />
-            </div>
-            <div className="vaul-inner-content">
-              <div className="vaul-header">
-                <Drawer.Title className="vaul-title">{selectedObra?.obr_nome}</Drawer.Title>
+        {contextMenu && !isMobile && (
+          <div
+            ref={contextMenuRef}
+            className="context-menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            {bibliotecaObras.includes(selectedObra.obr_id) ? (
+              <button className="context-menu-item" onClick={handleRemoveFromLibrary}>
+                <i className="fas fa-trash"></i> Remover da biblioteca
+              </button>
+            ) : (
+              <button className="context-menu-item" onClick={handleAddToLibrary}>
+                <i className="fas fa-plus"></i> Adicionar à biblioteca
+              </button>
+            )}
+            <button className="context-menu-item" onClick={handleOpenObra}>
+              <i className="fas fa-arrow-right"></i> Abrir obra
+            </button>
+            <button className="context-menu-item" onClick={handleOpenObraNewTab}>
+              <i className="fas fa-external-link"></i> Abrir em outra aba
+            </button>
+          </div>
+        )}
+
+        {/* NEW Search Drawer */}
+        <Drawer.Root open={showSearchDrawer} onOpenChange={setShowSearchDrawer}>
+          <Drawer.Portal>
+            <Drawer.Overlay className="vaul-overlay" />
+            <Drawer.Content className="vaul-content">
+              <div className="vaul-handle-wrapper">
+                <div className="vaul-handle" />
               </div>
-              <div className="vaul-body">
-                {selectedObra && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                    {bibliotecaObras.includes(selectedObra.obr_id) ? (
-                      <button className="context-menu-item" onClick={handleRemoveFromLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
-                        <i className="fas fa-trash"></i> Remover da biblioteca
-                      </button>
-                    ) : (
-                      <button className="context-menu-item" onClick={handleAddToLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
-                        <i className="fas fa-plus"></i> Adicionar à biblioteca
-                      </button>
-                    )}
-                    <button className="context-menu-item" onClick={handleOpenObra} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
-                      <i className="fas fa-arrow-right"></i> Abrir obra
-                    </button>
-                    <button className="context-menu-item" onClick={handleOpenObraNewTab} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: 'none', borderRadius: 0 }}>
-                      <i className="fas fa-external-link"></i> Abrir em outra aba
+              <div className="vaul-inner-content">
+                <div className="vaul-header">
+                  <Drawer.Title className="vaul-title">Pesquisar</Drawer.Title>
+                </div>
+                <div className="vaul-body">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <input
+                      type="text"
+                      placeholder="Digite o nome da obra..."
+                      value={localSearch}
+                      onChange={(e) => setLocalSearch(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 0',
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid rgba(255,255,255,0.3)',
+                        color: '#fff',
+                        fontSize: '0.9rem',
+                        fontWeight: '400 !important',
+                        outline: 'none',
+                        borderRadius: 0
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSearchSubmit()
+                      }}
+                      onFocus={(e) => e.target.style.borderBottomColor = '#fff'}
+                      onBlur={(e) => e.target.style.borderBottomColor = 'rgba(255,255,255,0.3)'}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSearchSubmit}
+                      disabled={localSearch.trim().length < 3}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#fff',
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '999px',
+                        fontSize: '0.9rem',
+                        fontWeight: '400',
+                        cursor: localSearch.trim().length < 3 ? 'not-allowed' : 'pointer',
+                        opacity: localSearch.trim().length < 3 ? 0.5 : 1,
+                        transition: 'opacity 0.2s'
+                      }}
+                    >
+                      Pesquisar
                     </button>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
 
+        {/* NEW Context Menu Drawer */}
+        <Drawer.Root open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+          <Drawer.Portal>
+            <Drawer.Overlay className="vaul-overlay" />
+            <Drawer.Content className="vaul-content">
+              <div className="vaul-handle-wrapper">
+                <div className="vaul-handle" />
+              </div>
+              <div className="vaul-inner-content">
+                <div className="vaul-header">
+                  <Drawer.Title className="vaul-title">{selectedObra?.obr_nome}</Drawer.Title>
+                </div>
+                <div className="vaul-body">
+                  {selectedObra && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                      {bibliotecaObras.includes(selectedObra.obr_id) ? (
+                        <button className="context-menu-item" onClick={handleRemoveFromLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                          <i className="fas fa-trash"></i> Remover da biblioteca
+                        </button>
+                      ) : (
+                        <button className="context-menu-item" onClick={handleAddToLibrary} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                          <i className="fas fa-plus"></i> Adicionar à biblioteca
+                        </button>
+                      )}
+                      <button className="context-menu-item" onClick={handleOpenObra} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: 0 }}>
+                        <i className="fas fa-arrow-right"></i> Abrir obra
+                      </button>
+                      <button className="context-menu-item" onClick={handleOpenObraNewTab} style={{ padding: '12px 0', fontSize: '1rem', background: 'transparent', borderBottom: 'none', borderRadius: 0 }}>
+                        <i className="fas fa-external-link"></i> Abrir em outra aba
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
+
+      </div>
       {toast && (
         <div className={`toast toast-${toast.type}`}>
           {toast.message}
         </div>
       )}
-    </>
+    </div>
   )
 }
